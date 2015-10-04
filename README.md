@@ -63,8 +63,6 @@ $ docker run -d -e ARTEMIS_USER=myuser -e ARTEMIS_PASSWORD=otherpassword vromero
 | Mount point            | Description                                                       |
 |----------------------- |-------------------------------------------------------------------|
 |`/var/lib/artemis/data` | Holds the data files used for storing persistent messages         |
-|`/var/lib/artemis/tmp`  | holds temporary files that are safe to delete between broker runs |
-|`/var/lib/artemis/log`  | Holds rotating log files                                          |
 |`/var/lib/artemis/etc`  | Hold the instance configuration files                             |
 
 ## Exposed ports
