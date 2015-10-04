@@ -28,7 +28,6 @@ RUN cd /opt && wget -q http://www.us.apache.org/dist/activemq/activemq-artemis/1
   tar xfz apache-artemis-1.1.0-bin.tar.gz && \
   ln -s apache-artemis-1.1.0 apache-artemis && \
   rm -f apache-artemis-1.1.0-bin.tar.gz KEYS apache-artemis-1.1.0-bin.tar.gz.asc
-#  apt-get -qq -o=Dpkg::Use-Pty=0 purge -y --auto-remove ca-certificates wget
 
 # Create broker instance
 RUN cd /var/lib && \
@@ -67,10 +66,9 @@ EXPOSE 1883
 #Port for STOMP
 EXPOSE 61613
 
-# Expose some folders
+# Expose some outstanding folders
 VOLUME ["/var/lib/artemis/data"]
 VOLUME ["/var/lib/artemis/tmp"]
-VOLUME ["/var/lib/artemis/log"]
 VOLUME ["/var/lib/artemis/etc"]
 
 WORKDIR /var/lib/artemis/bin
