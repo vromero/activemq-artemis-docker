@@ -1,6 +1,7 @@
 # Supported tags and respective `Dockerfile` links
 
--	[`1.1.0`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/Dockerfile)
+-	[`1.2.0`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/Dockerfile)
+-	[`1.1.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.1.0/Dockerfile)
 -	[`1.0.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.0.0/Dockerfile)
 
 # What is ActiveMQ Artemis?
