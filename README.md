@@ -56,7 +56,7 @@ After a few seconds, you can run the following command `docker logs some-thing` 
 By default Artemis will use 512 Megabytes or RAM at minimum and 2048 Megabytes at maximum. You can set the memory that you application needs by using the parameters `ARTEMIS__MIN_MEMORY` and `ARTEMIS_MAX_MEMORY`:
 
 ```console
-$ docker run -d -e 'ACTIVEMQ_MIN_MEMORY=1512M' -e 'ACTIVEMQ_MAX_MEMORY=3048M' vromero/activemq-artemis
+$ docker run -d -e 'ARTEMIS_MIN_MEMORY=1512M' -e 'ARTEMIS_MAX_MEMORY=3048M' vromero/activemq-artemis
 ```
 
 The previous example will launch Apache ActiveMQ Artemis in docker with 1512 MB of memory, with a maximum usage of 3048 MB of memory.
@@ -65,10 +65,10 @@ The format of the values passed is the same than the format used for the Java `-
 
 ## Setting username and password
 
-If you wish to change the default username and password of `apollo` / `ollopaehcapa`, you can do so with the `ARTEMIS_USER` and `ARTEMIS_PASSWORD` environmental variables:
+If you wish to change the default username and password of `artemis` / `simetraehcapa`, you can do so with the `ARTEMIS_USERNAME` and `ARTEMIS_PASSWORD` environmental variables:
 
 ```console
-$ docker run -d -e ARTEMIS_USER=myuser -e ARTEMIS_PASSWORD=otherpassword vromero/activemq-artemis
+$ docker run -d -e ARTEMIS_USERNAME=myuser -e ARTEMIS_PASSWORD=otherpassword vromero/activemq-artemis
 ```
 
 ## Mount points
