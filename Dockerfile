@@ -33,11 +33,11 @@ RUN cd /opt && wget -q http://www.us.apache.org/dist/activemq/activemq-artemis/1
 RUN cd /var/lib && \
   /opt/apache-artemis-1.1.0/bin/artemis create artemis \
     --home /opt/apache-artemis \
-    --user apollo \
-    --password ollopaehcapa \
+    --user artemis \
+    --password simetraehcapa \
     --require-login \
-    --cluster-user apolloCluster \
-    --cluster-password ollopaehcaparetsulc
+    --cluster-user artemisCluster \
+    --cluster-password simetraehcaparetsulc
 
 # Ports are only exposed with an explicit argument, there is no need to binding
 # the web console to localhost
