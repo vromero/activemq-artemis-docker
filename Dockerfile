@@ -1,5 +1,3 @@
-# ActiveMQ Apollo 1.2.0
-
 FROM java:8
 MAINTAINER Victor Romero <victor.romero@gmail.com>
 
