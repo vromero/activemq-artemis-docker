@@ -1,5 +1,3 @@
-# ActiveMQ Artemis 1.4.0
-
 FROM java:8
 MAINTAINER Victor Romero <victor.romero@gmail.com>
 
