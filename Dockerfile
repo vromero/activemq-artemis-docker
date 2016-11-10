@@ -23,8 +23,8 @@ RUN set -x \
     && gosu nobody true
 
 # Uncompress and validate
-RUN cd /opt && wget -q http://www-us.apache.org/dist/activemq/activemq-artemis/1.3.0/apache-artemis-1.3.0-bin.tar.gz && \
-  wget -q http://www.us.apache.org/dist/activemq/activemq-artemis/1.3.0/apache-artemis-1.3.0-bin.tar.gz.asc && \
+RUN cd /opt && wget -q https://archive.apache.org/dist/activemq/activemq-artemis/1.3.0/apache-artemis-1.3.0-bin.tar.gz && \
+  wget -q https://archive.apache.org/dist/activemq/activemq-artemis/1.3.0/apache-artemis-1.3.0-bin.tar.gz.asc && \
   wget -q http://apache.org/dist/activemq/KEYS && \
   gpg --import KEYS && \
   gpg apache-artemis-1.3.0-bin.tar.gz.asc && \
