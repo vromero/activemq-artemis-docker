@@ -6,7 +6,7 @@ sed -i "s/logger.handlers=.*/logger.handlers=CONSOLE/g" ../etc/logging.propertie
 
 # Update users and roles with if username and password is passed as argument
 if [[ "$ARTEMIS_USERNAME" && "$ARTEMIS_PASSWORD" ]]; then
-  sed -i "s/artemis=amq/$ARTEMIS_USERNAME=amq/g" ../etc/artemis-roles.properties
+  sed -i "s/amq=artemis/$ARTEMIS_USERNAME=amq/g" ../etc/artemis-roles.properties
   sed -i "s/artemis=simetraehcapa/$ARTEMIS_USERNAME=$ARTEMIS_PASSWORD/g" ../etc/artemis-users.properties
 fi
 
