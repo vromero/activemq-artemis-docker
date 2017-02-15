@@ -34,26 +34,6 @@ RUN cd /opt && wget -q http://www-us.apache.org/dist/activemq/activemq-artemis/1
   ln -s apache-artemis-1.5.0 apache-artemis && \
   rm -f apache-artemis-1.5.0-bin.tar.gz KEYS apache-artemis-1.5.0-bin.tar.gz.asc
 
-# Create broker instance
-RUN cd /var/lib && \
-  /opt/apache-artemis-1.5.0/bin/artemis create artemis \
-    --home /opt/apache-artemis \
-    --user artemis \
-    --password simetraehcapa \
-    --role amq \
-    --require-login \
-    --cluster-user artemisCluster \
-    --cluster-password simetraehcaparetsulc
-
-# Ports are only exposed with an explicit argument, there is no need to binding
-# the web console to localhost
-RUN cd /var/lib/artemis/etc && \
-  xmlstarlet ed -L -N amq="http://activemq.org/schema" \
-    -u "/amq:broker/amq:web/@bind" \
-    -v "http://0.0.0.0:8161" bootstrap.xml
-
-RUN chown -R artemis.artemis /var/lib/artemis
-
 # Web Server
 EXPOSE 8161
 
