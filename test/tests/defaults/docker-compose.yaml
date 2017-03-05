@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+
+  artemis:
+    image: vromero/activemq-artemis
+    ports:
+      - 8161:8161
+      - 61616:61616
+      - 5445:5445
+      - 5672:5672
+      - 1883:1883
+      - 61613:61613
+    networks:
+      - artemis-network
+
+  artemis-test:
+    depends_on: [artemis]
+    image: activemq-artemis-test
+    volumes:
+      - .:/opt/activemq-artemis-test/tests
+    networks:
+      - artemis-network
+
+networks:
+    artemis-network:
+
+volumes:
+  db-data:
