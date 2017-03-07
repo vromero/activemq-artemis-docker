@@ -12,10 +12,8 @@ services:
       - 1883:1883
       - 61613:61613
     networks:
-      - artemis-network
-    environment:
-      - ARTEMIS_USERNAME=myuser
-      - ARTEMIS_PASSWORD=otherpassword
+      - artemis-custom-username-network
+
 
   artemis-test:
     depends_on: [artemis]
@@ -23,10 +21,7 @@ services:
     volumes:
       - .:/opt/activemq-artemis-test/tests
     networks:
-      - artemis-network
+      - artemis-custom-username-network
 
 networks:
-    artemis-network:
-
-volumes:
-  db-data:
+    artemis-custom-username-network:

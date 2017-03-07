@@ -7,7 +7,7 @@ find ./tests/* -type d |  while read -r D
 do
   echo $D
   cd $D
-  docker-compose up --force-recreate --abort-on-container-exit
+  docker-compose up --abort-on-container-exit
   TEST_STATUS=$(docker-compose ps -q | xargs docker inspect -f '{{ .Config.Image }} {{.State.ExitCode}}' | awk '/activemq-artemis-test/ {print $2}')
 
   if [ ${TEST_STATUS} -ne 0 ] ; then

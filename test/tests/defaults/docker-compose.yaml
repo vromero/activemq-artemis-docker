@@ -24,6 +24,3 @@ services:
 
 networks:
     artemis-network:
-
-volumes:
-  db-data:

@@ -12,5 +12,6 @@ setup(){
 }
 
 test_should_be_able_to_send_with_stomp_using_default_username_and_password(){
+  sleep 5
   mosquitto_pub -h artemis -i asdf -t /asdfasdf -m 'This is a test message' -u artemis -P simetraehcapa
 }
