@@ -72,12 +72,85 @@ If you wish to change the default username and password of `artemis` / `simetrae
 $ docker run -d -e ARTEMIS_USERNAME=myuser -e ARTEMIS_PASSWORD=otherpassword vromero/activemq-artemis
 ```
 
+## Overriding parts of the configuration
+
+It is possible to mount a whole artemis `etc` directory in this image in the volume `/var/lib/artemis/etc`.
+But this is an overkill for many situations where only small tweaks are necessary. This could potentially prevent the configuration by parameters to work properly too.
+
+For cases where the change from the oringinal configuration is not too big, the volume`/var/lib/artemis/etc-override` can be used.
+If a `broker.xml` file is present, it will be *merged* with the default configuration.
+
+For instance, lets say that you want to add a diverts section, you could have a local directory, lets say `/var/artemis-data/override`
+where you could place a broker.xml file that looks like the following listing:
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<configuration xmlns="urn:activemq" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:activemq /schema/artemis-server.xsd">
+   <core xmlns="urn:activemq:core">
+      <diverts>
+         <divert name="order-divert">
+            <routing-name>order-divert</routing-name>
+            <address>orders</address>
+            <forwarding-address>spyTopic</forwarding-address>
+            <exclusive>false</exclusive>
+         </divert>
+      </diverts>
+   </core>
+</configuration>
+```
+
+For the use cases where instead of merging, the desired outcome is an override, a file named `custom-transformations.xslt`
+in `/var/lib/artemis/etc-override` is supported.
+With this transformation, that is applied before the merge, pieces of the configuration could be removed.
+
+For instance to completely override the `jms` definitions instead of merging, these files could be used:
+
+`broker.xml`
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<configuration xmlns="urn:activemq" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:activemq /schema/artemis-configuration.xsd">
+  <jms xmlns="urn:activemq:jms">
+    <queue name="myfancyqueue"/>
+    <queue name="myotherqueue"/>
+  </jms>
+</configuration>
+```
+
+`custom-transformations.xslt`
+
+```xslt
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:activemq="urn:activemq" xmlns:jms="urn:activemq:jms">
+
+ <xsl:output omit-xml-declaration="yes"/>
+
+    <xsl:template match="node()|@*">
+      <xsl:copy>
+         <xsl:apply-templates select="node()|@*"/>
+      </xsl:copy>
+    </xsl:template>
+
+    <xsl:template match="*[local-name()='jms']"/>
+</xsl:stylesheet>
+```
+
+If you would like to see the final result of your transformations, execute the following:
+
+```
+docker run -v /var/artemis-data/override:/var/lib/artemis/etc-override -it --rm vromero/activemq-artemis cat ../etc/broker.xml
+```
+
 ## Mount points
 
-| Mount point            | Description                                                       |
-|----------------------- |-------------------------------------------------------------------|
-|`/var/lib/artemis/data` | Holds the data files used for storing persistent messages         |
-|`/var/lib/artemis/etc`  | Hold the instance configuration files                             |
+| Mount point                      | Description                                                       |
+|--------------------------------- |-------------------------------------------------------------------|
+|`/var/lib/artemis/data`           | Holds the data files used for storing persistent messages         |
+|`/var/lib/artemis/etc`            | Hold the instance configuration files                             |
+|`/var/lib/artemis/etc-override`   | Hold the instance configuration files                             |
+
 
 ## Exposed ports
 
