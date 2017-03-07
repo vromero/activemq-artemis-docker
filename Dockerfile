@@ -5,7 +5,7 @@ MAINTAINER Victor Romero <victor.romero@gmail.com>
 RUN groupadd -r artemis && useradd -r -g artemis artemis
 
 RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && apt-get -qq -o=Dpkg::Use-Pty=0 upgrade -y && \
-  apt-get -qq -o=Dpkg::Use-Pty=0 install -y --no-install-recommends libaio1 xmlstarlet && \
+  apt-get -qq -o=Dpkg::Use-Pty=0 install -y --no-install-recommends libaio1 xmlstarlet jq && \
   rm -rf /var/lib/apt/lists/*
 
 # grab gosu for easy step-down from root
@@ -52,6 +52,9 @@ RUN cd /var/lib/artemis/etc && \
 
 RUN chown -R artemis.artemis /var/lib/artemis
 
+RUN mkdir -p /opt/merge
+COPY merge.xslt /opt/merge
+
 # Web Server
 EXPOSE 8161
 
@@ -74,6 +77,7 @@ EXPOSE 61613
 VOLUME ["/var/lib/artemis/data"]
 VOLUME ["/var/lib/artemis/tmp"]
 VOLUME ["/var/lib/artemis/etc"]
+VOLUME ["/var/lib/artemis/etc-override"]
 
 WORKDIR /var/lib/artemis/bin
 
