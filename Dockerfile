@@ -79,7 +79,7 @@ EXPOSE 61613
 VOLUME ["/var/lib/artemis/data"]
 VOLUME ["/var/lib/artemis/tmp"]
 VOLUME ["/var/lib/artemis/etc"]
-VOLUME ["/var/lib/artemis/etc-overwrite"]
+VOLUME ["/var/lib/artemis/etc-override"]
 
 WORKDIR /var/lib/artemis/bin
 

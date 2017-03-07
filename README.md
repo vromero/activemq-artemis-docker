@@ -79,10 +79,10 @@ $ docker run -d -e ARTEMIS_USERNAME=myuser -e ARTEMIS_PASSWORD=otherpassword vro
 It is possible to mount a whole artemis `etc` directory in this image in the volume `/var/lib/artemis/etc`.
 But this is an overkill for many situations where only small tweaks are necessary.  
 
-For those cases `/var/lib/artemis/etc-overwrite` can be used.
+For those cases `/var/lib/artemis/etc-override` can be used.
 If a `broker.xml` file is present, it will be *merged* with the default configuration.
 
-For instance lets say that you want to add a diverts section, you could have a local directory, lets say `/var/artemis-data/overwrite`
+For instance lets say that you want to add a diverts section, you could have a local directory, lets say `/var/artemis-data/override`
 where you could place a broker.xml file that looks like the following listing:
 
 ```xml
@@ -102,8 +102,8 @@ where you could place a broker.xml file that looks like the following listing:
 </configuration>
 ```
 
-For the use cases where instead of merging, the desired outcome is an overwrite, a file named `custom-transformations.xslt`
-in `/var/lib/artemis/etc-overwrite` is supported. For instance to delete overwrite the `jms` definitions instead of merging, these files could be used:
+For the use cases where instead of merging, the desired outcome is an override, a file named `custom-transformations.xslt`
+in `/var/lib/artemis/etc-override` is supported. For instance to delete override the `jms` definitions instead of merging, these files could be used:
 
 `broker.xml`
 
@@ -139,7 +139,7 @@ in `/var/lib/artemis/etc-overwrite` is supported. For instance to delete overwri
 If you would like to see the final result of your transformations, execute the following:
 
 ```
-docker run -v /var/artemis-data/overwrite:/var/lib/artemis/etc-overwrite -it --rm vromero/activemq-artemis cat ../etc/broker.xml
+docker run -v /var/artemis-data/override:/var/lib/artemis/etc-override -it --rm vromero/activemq-artemis cat ../etc/broker.xml
 ```
 
 ## Mount points
@@ -148,7 +148,7 @@ docker run -v /var/artemis-data/overwrite:/var/lib/artemis/etc-overwrite -it --r
 |--------------------------------- |-------------------------------------------------------------------|
 |`/var/lib/artemis/data`           | Holds the data files used for storing persistent messages         |
 |`/var/lib/artemis/etc`            | Hold the instance configuration files                             |
-|`/var/lib/artemis/etc-overwrite`  | Hold the instance configuration files                             |
+|`/var/lib/artemis/etc-override`  | Hold the instance configuration files                             |
 
 
 ## Exposed ports
