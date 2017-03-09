@@ -7,7 +7,7 @@ MAINTAINER Victor Romero <victor.romero@gmail.com>
 RUN groupadd -r artemis && useradd -r -g artemis artemis
 
 RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && apt-get -qq -o=Dpkg::Use-Pty=0 upgrade -y && \
-  apt-get -qq -o=Dpkg::Use-Pty=0 install -y --no-install-recommends libaio1 xmlstarlet && \
+  apt-get -qq -o=Dpkg::Use-Pty=0 install -y --no-install-recommends libaio1 xmlstarlet jq && \
   rm -rf /var/lib/apt/lists/*
 
 # grab gosu for easy step-down from root
