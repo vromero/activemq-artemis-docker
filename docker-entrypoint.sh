@@ -20,12 +20,12 @@ if [[ "$ARTEMIS_MAX_MEMORY" ]]; then
   sed -i "s/-Xmx1024M/-Xmx$ARTEMIS_MAX_MEMORY/g" ../etc/artemis.profile
 fi
 
-if [ -f /var/lib/artemis/etc-override/custom-transformations.xslt ]; then
-  echo Applying custom-transformations.xslt
+if [ -f /var/lib/artemis/etc-override/broker.xslt ]; then
+  echo Applying broker.xslt
   cp /var/lib/artemis/etc/broker.xml /tmp/broker.xml
-  xmlstarlet tr /var/lib/artemis/etc-override/custom-transformations.xslt /tmp/broker.xml > /var/lib/artemis/etc/broker.xml
+  xmlstarlet tr /var/lib/artemis/etc-override/broker.xslt /tmp/broker.xml > /var/lib/artemis/etc/broker.xml
 else
-  echo No custom-transformations.xslt found
+  echo No broker.xslt found
 fi
 
 if [ -f /var/lib/artemis/etc-override/broker.xml ]; then
