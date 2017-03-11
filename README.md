@@ -72,12 +72,23 @@ If you wish to change the default username and password of `artemis` / `simetrae
 $ docker run -d -e ARTEMIS_USERNAME=myuser -e ARTEMIS_PASSWORD=otherpassword vromero/activemq-artemis
 ```
 
+## Using a custom etc
+
+To mount a whole artemis `etc` directory in this image, just mount your artemis etc in the volume `/var/lib/artemis/etc`.
+Please make sure the `artemis.profile` directory includes the following two likes just as shown (and not pointing to any of your local directories):
+
+```
+ARTEMIS_HOME='/opt/apache-artemis'
+ARTEMIS_INSTANCE='/var/lib/artemis'
+```
+When this option is used, other configuration parameters like the ones described in : [Setting memory values](#setting-memory-values) and [Setting username and password](#setting-username-and-password) might not work.
+
 ## Overriding parts of the configuration
 
 It is possible to mount a whole artemis `etc` directory in this image in the volume `/var/lib/artemis/etc`.
 But this is an overkill for many situations where only small tweaks are necessary. This could potentially prevent the configuration by parameters to work properly too.
 
-For cases where the change from the oringinal configuration is not too big, the volume`/var/lib/artemis/etc-override` can be used.
+For cases where the change from the original configuration is not too big, the volume`/var/lib/artemis/etc-override` can be used.
 If a `broker.xml` file is present, it will be *merged* with the default configuration.
 
 For instance, lets say that you want to add a diverts section, you could have a local directory, lets say `/var/artemis-data/override`
