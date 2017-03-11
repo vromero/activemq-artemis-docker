@@ -113,7 +113,7 @@ where you could place a broker.xml file that looks like the following listing:
 </configuration>
 ```
 
-For the use cases where instead of merging, the desired outcome is an override, a file named `custom-transformations.xslt`
+For the use cases where instead of merging, the desired outcome is an override, a file named `broker.xslt`
 in `/var/lib/artemis/etc-override` is supported.
 With this transformation, that is applied before the merge, pieces of the configuration could be removed.
 
@@ -132,7 +132,7 @@ For instance to completely override the `jms` definitions instead of merging, th
 </configuration>
 ```
 
-`custom-transformations.xslt`
+`broker.xslt`
 
 ```xslt
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
