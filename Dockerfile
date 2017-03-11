@@ -37,7 +37,7 @@ RUN cd /opt && wget -q https://repository.apache.org/content/repositories/releas
 
 # Create broker instance
 RUN cd /var/lib && \
-  /opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}/bin/artemis create artemis \
+  echo n | /opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}/bin/artemis create artemis \
     --home /opt/apache-artemis \
     --user artemis \
     --password simetraehcapa \
