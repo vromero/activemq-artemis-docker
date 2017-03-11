@@ -1,4 +1,4 @@
-# ActiveMQ Artemis 1.5.0
+# ActiveMQ Artemis
 
 FROM java:8
 MAINTAINER Victor Romero <victor.romero@gmail.com>
@@ -25,18 +25,18 @@ RUN set -x \
     && gosu nobody true
 
 # Uncompress and validate
-RUN cd /opt && wget -q http://www-us.apache.org/dist/activemq/activemq-artemis/1.5.2/apache-artemis-1.5.2-bin.tar.gz && \
-  wget -q http://www.us.apache.org/dist/activemq/activemq-artemis/1.5.2/apache-artemis-1.5.2-bin.tar.gz.asc && \
+RUN cd /opt && wget -q http://www-us.apache.org/dist/activemq/activemq-artemis/1.5.3/apache-artemis-1.5.3-bin.tar.gz && \
+  wget -q http://www.us.apache.org/dist/activemq/activemq-artemis/1.5.3/apache-artemis-1.5.3-bin.tar.gz.asc && \
   wget -q http://apache.org/dist/activemq/KEYS && \
   gpg --import KEYS && \
-  gpg apache-artemis-1.5.2-bin.tar.gz.asc && \
-  tar xfz apache-artemis-1.5.2-bin.tar.gz && \
-  ln -s apache-artemis-1.5.2 apache-artemis && \
-  rm -f apache-artemis-1.5.2-bin.tar.gz KEYS apache-artemis-1.5.2-bin.tar.gz.asc
+  gpg apache-artemis-1.5.3-bin.tar.gz.asc && \
+  tar xfz apache-artemis-1.5.3-bin.tar.gz && \
+  ln -s apache-artemis-1.5.3 apache-artemis && \
+  rm -f apache-artemis-1.5.3-bin.tar.gz KEYS apache-artemis-1.5.3-bin.tar.gz.asc
 
 # Create broker instance
 RUN cd /var/lib && \
-  /opt/apache-artemis-1.5.2/bin/artemis create artemis \
+  /opt/apache-artemis-1.5.3/bin/artemis create artemis \
     --home /opt/apache-artemis \
     --user artemis \
     --password simetraehcapa \
