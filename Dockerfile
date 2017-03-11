@@ -1,6 +1,4 @@
-# ActiveMQ Artemis 1.5.0
-
-FROM java:8
+FROM openjdk:8
 MAINTAINER Victor Romero <victor.romero@gmail.com>
 
 # add user and group for artemis
