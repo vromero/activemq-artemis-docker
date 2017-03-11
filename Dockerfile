@@ -1,5 +1,3 @@
-# ActiveMQ Artemis
-
 FROM openjdk:8-jre-alpine
 MAINTAINER Victor Romero <victor.romero@gmail.com>
 
@@ -25,13 +23,15 @@ RUN set -x \
     && gosu nobody true \
     && apk del .gosu-deps
 
+
+
 # Uncompress and validate
 ENV ACTIVEMQ_ARTEMIS_VERSION 1.5.3
 RUN set -x && \
-    apk add --no-cache --virtual .gosu-deps wget gnupg && \
+  apk add --no-cache --virtual .gosu-deps wget gnupg && \
   mkdir /opt && cd /opt && \
-  wget -q http://www-us.apache.org/dist/activemq/activemq-artemis/1.5.3/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz && \
-  wget -q http://www.us.apache.org/dist/activemq/activemq-artemis/1.5.3/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc && \
+  wget -q https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-artemis/${ACTIVEMQ_ARTEMIS_VERSION}/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz && \
+  wget -q https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-artemis/${ACTIVEMQ_ARTEMIS_VERSION}/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc && \
   wget -q http://apache.org/dist/activemq/KEYS && \
   gpg --import KEYS && \
   gpg apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc && \
