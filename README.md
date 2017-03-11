@@ -1,7 +1,15 @@
 # Supported tags and respective `Dockerfile` links
 
--	`1.1.0`, `latest`
--	`1.0.0`
+-	[`1.5.3`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.3/Dockerfile)
+-	[`1.5.3-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.3-alpine/Dockerfile)
+-	[`1.5.2`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.2/Dockerfile)
+-	[`1.5.1`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.1/Dockerfile)
+-	[`1.5.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.0/Dockerfile)
+-	[`1.4.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.4.0/Dockerfile)
+-	[`1.3.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.3.0/Dockerfile)
+-	[`1.2.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.2.0/Dockerfile)
+-	[`1.1.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.1.0/Dockerfile)
+-	[`1.0.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.0.0/Dockerfile)
 
 # What is ActiveMQ Artemis?
 
@@ -18,7 +26,7 @@ Apache ActiveMQ Artemis is an open source project to build a multi-protocol, emb
 ActiveMQ Artemis daemon can be run with the following command:
 
 ```console
-$ docker run -d vromero/artemis
+$ docker run -d vromero/activemq-artemis
 ```
 
 After a few seconds, you can run the following command `docker logs some-thing` (where some-thing is the name docker assigned to your instance), you'll see in the output a block similar to:
