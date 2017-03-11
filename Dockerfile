@@ -26,22 +26,23 @@ RUN set -x \
     && apk del .gosu-deps
 
 # Uncompress and validate
+ENV ACTIVEMQ_ARTEMIS_VERSION 1.5.3
 RUN set -x && \
     apk add --no-cache --virtual .gosu-deps wget gnupg && \
   mkdir /opt && cd /opt && \
-  wget -q http://www-us.apache.org/dist/activemq/activemq-artemis/1.5.3/apache-artemis-1.5.3-bin.tar.gz && \
-  wget -q http://www.us.apache.org/dist/activemq/activemq-artemis/1.5.3/apache-artemis-1.5.3-bin.tar.gz.asc && \
+  wget -q http://www-us.apache.org/dist/activemq/activemq-artemis/1.5.3/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz && \
+  wget -q http://www.us.apache.org/dist/activemq/activemq-artemis/1.5.3/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc && \
   wget -q http://apache.org/dist/activemq/KEYS && \
   gpg --import KEYS && \
-  gpg apache-artemis-1.5.3-bin.tar.gz.asc && \
-  tar xfz apache-artemis-1.5.3-bin.tar.gz && \
-  ln -s apache-artemis-1.5.3 apache-artemis && \
-  rm -f apache-artemis-1.5.3-bin.tar.gz KEYS apache-artemis-1.5.3-bin.tar.gz.asc && \
+  gpg apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc && \
+  tar xfz apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz && \
+  ln -s apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION} apache-artemis && \
+  rm -f apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz KEYS apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc && \
   apk del .gosu-deps
 
 # Create broker instance
 RUN cd /var/lib && \
-  /opt/apache-artemis-1.5.3/bin/artemis create artemis \
+  /opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}/bin/artemis create artemis \
     --home /opt/apache-artemis \
     --user artemis \
     --password simetraehcapa \
