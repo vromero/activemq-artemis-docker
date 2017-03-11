@@ -1,19 +1,19 @@
 # ActiveMQ Artemis
 
-FROM java:8
+FROM openjdk:8-jre-alpine
 MAINTAINER Victor Romero <victor.romero@gmail.com>
 
 # add user and group for artemis
-RUN groupadd -r artemis && useradd -r -g artemis artemis
+RUN addgroup -S artemis && adduser -S -G artemis artemis
 
-RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && apt-get -qq -o=Dpkg::Use-Pty=0 upgrade -y && \
-  apt-get -qq -o=Dpkg::Use-Pty=0 install -y --no-install-recommends libaio1 xmlstarlet jq && \
-  rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache libaio xmlstarlet jq
 
-# grab gosu for easy step-down from root
-ENV GOSU_VERSION 1.9
+ENV GOSU_VERSION 1.10
 RUN set -x \
-    && apt-get update && apt-get install -y --no-install-recommends ca-certificates wget && rm -rf /var/lib/apt/lists/* \
+    && apk add --no-cache --virtual .gosu-deps \
+        dpkg \
+        gnupg \
+        openssl \
     && dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')" \
     && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch" \
     && wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc" \
@@ -22,17 +22,22 @@ RUN set -x \
     && gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu \
     && rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc \
     && chmod +x /usr/local/bin/gosu \
-    && gosu nobody true
+    && gosu nobody true \
+    && apk del .gosu-deps
 
 # Uncompress and validate
-RUN cd /opt && wget -q http://www-us.apache.org/dist/activemq/activemq-artemis/1.5.3/apache-artemis-1.5.3-bin.tar.gz && \
+RUN set -x && \
+    apk add --no-cache --virtual .gosu-deps wget gnupg && \
+  mkdir /opt && cd /opt && \
+  wget -q http://www-us.apache.org/dist/activemq/activemq-artemis/1.5.3/apache-artemis-1.5.3-bin.tar.gz && \
   wget -q http://www.us.apache.org/dist/activemq/activemq-artemis/1.5.3/apache-artemis-1.5.3-bin.tar.gz.asc && \
   wget -q http://apache.org/dist/activemq/KEYS && \
   gpg --import KEYS && \
   gpg apache-artemis-1.5.3-bin.tar.gz.asc && \
   tar xfz apache-artemis-1.5.3-bin.tar.gz && \
   ln -s apache-artemis-1.5.3 apache-artemis && \
-  rm -f apache-artemis-1.5.3-bin.tar.gz KEYS apache-artemis-1.5.3-bin.tar.gz.asc
+  rm -f apache-artemis-1.5.3-bin.tar.gz KEYS apache-artemis-1.5.3-bin.tar.gz.asc && \
+  apk del .gosu-deps
 
 # Create broker instance
 RUN cd /var/lib && \
