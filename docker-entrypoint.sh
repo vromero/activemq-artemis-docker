@@ -35,6 +35,36 @@ else
   echo No broker.xml override found
 fi
 
+function performance-journal {
+  if [[ "$ARTEMIS_PERF_JOURNAL" = "AUTO" || "$ARTEMIS_PERF_JOURNAL" = "ALWAYS" ]]; then
+
+    if [[ -e /var/lib/artemis/data/.perf-journal-completed ]]; then
+      echo "Volume's journal buffer already fine tuned"
+      return
+    fi
+
+    echo -n "Calculating performance journal ... "
+    RECOMMENDED_JOURNAL_BUFFER=$(gosu artemis "./artemis" "perf-journal" | grep "<journal-buffer-timeout" | xmlstarlet sel -t -c '/journal-buffer-timeout/text()' || true)
+    if [ -z "$RECOMMENDED_JOURNAL_BUFFER" ]; then
+      echo "There was an error calculating the performance journal, gracefully handling it"
+      return
+    fi
+
+    xmlstarlet ed -L \
+      -N activemq="urn:activemq" \
+      -N core="urn:activemq:core" \
+      -u "/activemq:configuration/core:core/core:journal-buffer-timeout" \
+      -v "$RECOMMENDED_JOURNAL_BUFFER" ../etc/broker.xml
+      echo $RECOMMENDED_JOURNAL_BUFFER
+
+    if [[ "$ARTEMIS_PERF_JOURNAL" = "AUTO" ]]; then
+      touch /var/lib/artemis/data/.perf-journal-completed
+    fi
+  fi
+}
+
+performance-journal
+
 if [ "$1" = 'artemis-server' ]; then
 	set -- gosu artemis "./artemis" "run"
 fi
