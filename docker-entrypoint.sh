@@ -4,6 +4,10 @@ set -e
 # Log to tty to enable docker logs container-name
 sed -i "s/logger.handlers=.*/logger.handlers=CONSOLE/g" ../etc/logging.properties
 
+BROKER_HOME=/var/lib/artemis/
+OVERRIDE_PATH=$BROKER_HOME/etc-override
+CONFIG_PATH=$BROKER_HOME/etc
+
 # Update users and roles with if username and password is passed as argument
 if [[ "$ARTEMIS_USERNAME" && "$ARTEMIS_PASSWORD" ]]; then
   sed -i "s/amq[ ]*=.*/amq=$ARTEMIS_USERNAME\n/g" ../etc/artemis-roles.properties
@@ -20,19 +24,22 @@ if [[ "$ARTEMIS_MAX_MEMORY" ]]; then
   sed -i "s/-Xmx1024M/-Xmx$ARTEMIS_MAX_MEMORY/g" ../etc/artemis.profile
 fi
 
-if [ -f /var/lib/artemis/etc-override/broker.xslt ]; then
-  echo Applying broker.xslt
-  cp /var/lib/artemis/etc/broker.xml /tmp/broker.xml
-  xmlstarlet tr /var/lib/artemis/etc-override/broker.xslt /tmp/broker.xml > /var/lib/artemis/etc/broker.xml
+files=$(find $OVERRIDE_PATH -name "broker*" -type f | cut -d. -f1 | sort -u );
+if [ ${#files[@]} ]; then
+  cp $CONFIG_PATH/broker.xml /tmp/broker.xml
+  for f in $files; do
+    if [ -f $f.xslt ]; then
+      xmlstarlet tr $f.xslt /tmp/broker.xml > /tmp/broker-tr.xml
+      mv /tmp/broker-tr.xml /tmp/broker.xml
+    fi
+    if [ -f $f.xml ]; then
+      xmlstarlet tr /opt/merge/merge.xslt -s replace=true -s with=$f.xml /tmp/broker.xml > /tmp/broker-merge.xml
+      mv /tmp/broker-merge.xml /tmp/broker.xml
+    fi
+  done
+  cp /tmp/broker.xml $CONFIG_PATH/broker.xml
 else
-  echo No broker.xslt found
-fi
-
-if [ -f /var/lib/artemis/etc-override/broker.xml ]; then
-  cp /var/lib/artemis/etc/broker.xml /tmp/broker.xml
-  xmlstarlet tr /opt/merge/merge.xslt -s with=/var/lib/artemis/etc-override/broker.xml /tmp/broker.xml > /var/lib/artemis/etc/broker.xml
-else
-  echo No broker.xml override found
+  echo No configuration snippets found
 fi
 
 function performance-journal {
