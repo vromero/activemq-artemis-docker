@@ -106,10 +106,12 @@ It is possible to mount a whole artemis `etc` directory in this image in the vol
 But this is an overkill for many situations where only small tweaks are necessary.  
 
 For those cases `/var/lib/artemis/etc-override` can be used.
-If a `broker.xml` file is present, it will be *merged* with the default configuration.
 
-For instance lets say that you want to add a diverts section, you could have a local directory, lets say `/var/artemis-data/override`
-where you could place a broker.xml file that looks like the following listing:
+Multiple files with snippets of configuration can be dropped in the `etc-override` folder. Those configuration files must be named following the name convention `broker-{{desc}}.xml` where `desc` is a numeric representation of the snippet.
+The configuration files will be *merged* with the default configuration. An alphabetical precedence of the file names will be considered for the merge and in case of collision the latest change will be treated as final.
+
+For instance lets say that you want to add a diverts section, you could have a local directory, lets say `/var/artemis-data/etc-override`
+where you could place a `broker-00.xml` file that looks like the following listing:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -128,7 +130,7 @@ where you could place a broker.xml file that looks like the following listing:
 </configuration>
 ```
 
-For the use cases where instead of merging, the desired outcome is an override, a file named `custom-transformations.xslt`
+For the use cases where instead of merging, the desired outcome is an override, a file named `broker-00.xslt`
 in `/var/lib/artemis/etc-override` is supported. For instance to delete override the `jms` definitions instead of merging, these files could be used:
 
 `broker.xml`
@@ -144,7 +146,7 @@ in `/var/lib/artemis/etc-override` is supported. For instance to delete override
 </configuration>
 ```
 
-`custom-transformations.xslt`
+`broker-00.xslt`
 
 ```xslt
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
