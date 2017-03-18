@@ -78,6 +78,21 @@ If you wish to change the default username and password of `artemis` / `simetrae
 $ docker run -d -e ARTEMIS_USERNAME=myuser -e ARTEMIS_PASSWORD=otherpassword vromero/activemq-artemis
 ```
 
+## Configuring JMX
+
+Due to the JMX's nature, often with dynamics ports for RMI and the need having configure the public IP address to reach the RMI server.
+It is discouraged to use JMX in Docker. Although in certain scenarios, it could be advisable, as when deploying in a
+container orchestrator such as Kubernetes or Mesos, and deploying along side this container a side car. For such cases
+the following environment variable could be used: `ENABLE_JMX`.
+
+It is also possible to set the JMX port and the JMX RMI port with these two environment variables respectively: `JMX_PORT` (default: 1099) and `JMX_RMI_PORT` (default: 1098).
+
+Given that JMX is intended for side cars, it is attached only to localhost and not protected with SSL. Likewise, its ports are not declared in the `Dockerfile`.
+
+```console
+$ docker run -d -e ENABLE_JMX=true -e JMX_PORT=1199 -e JMX_RMI_PORT=1198 vromero/activemq-artemis
+```
+
 ## Performing a performance journal test
 
 Different kinds of volumes need different values in fine tuning.

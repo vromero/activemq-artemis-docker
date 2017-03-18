@@ -33,13 +33,26 @@ if [ ${#files[@]} ]; then
       mv /tmp/broker-tr.xml /tmp/broker.xml
     fi
     if [ -f $f.xml ]; then
-      xmlstarlet tr /opt/merge/merge.xslt -s replace=true -s with=$f.xml /tmp/broker.xml > /tmp/broker-merge.xml
+      xmlstarlet tr /opt/assets/merge.xslt -s replace=true -s with=$f.xml /tmp/broker.xml > /tmp/broker-merge.xml
       mv /tmp/broker-merge.xml /tmp/broker.xml
     fi
   done
   cp /tmp/broker.xml $CONFIG_PATH/broker.xml
 else
   echo No configuration snippets found
+fi
+
+if [[ "$ENABLE_JMX" ]]; then
+
+  cat << 'EOF' >> $CONFIG_PATH/artemis.profile
+    if [ "$1" = "run" ]; then
+      JAVA_ARGS="$JAVA_ARGS -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=${JMX_PORT:-1099} -Dcom.sun.management.jmxremote.rmi.port=${JMX_RMI_PORT:-1098} -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+    fi
+EOF
+
+  cp $CONFIG_PATH/broker.xml /tmp/broker.xml
+  xmlstarlet tr /opt/assets/merge.xslt -s replace=true -s with=/opt/assets/enable-jmx.xml /tmp/broker.xml > /tmp/broker-merge.xml
+  mv /tmp/broker-merge.xml $CONFIG_PATH/broker.xml
 fi
 
 function performance-journal {

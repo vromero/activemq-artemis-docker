@@ -57,8 +57,9 @@ RUN cd /var/lib/artemis/etc && \
 
 RUN chown -R artemis.artemis /var/lib/artemis
 
-RUN mkdir -p /opt/merge
-COPY merge.xslt /opt/merge
+RUN mkdir -p /opt/assets
+COPY assets/merge.xslt /opt/assets
+COPY assets/enable-jmx.xml /opt/assets
 
 # Web Server
 EXPOSE 8161
