@@ -1,6 +1,8 @@
 # Supported tags and respective `Dockerfile` links
 
--	[`1.5.3`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.3/Dockerfile)
+-	[`1.5.4`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.4/Dockerfile)
+-	[`1.5.4-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.4-alpine/Dockerfile)
+-	[`1.5.3`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.3/Dockerfile)
 -	[`1.5.3-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.3-alpine/Dockerfile)
 -	[`1.5.2`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.2/Dockerfile)
 -	[`1.5.1`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.1/Dockerfile)
@@ -85,7 +87,7 @@ It is discouraged to use JMX in Docker. Although in certain scenarios, it could 
 container orchestrator such as Kubernetes or Mesos, and deploying along side this container a side car. For such cases
 the following environment variable could be used: `ENABLE_JMX`.
 
-It is also possible to set the JMX port and the JMX RMI port with these two environment variables respectively: `JMX_PORT` (default: 1099) and `JMX_RMI_PORT` (default: 1098).
+It is also possible to set the JMX port and the JMX RMI port with these two environment variables respectively: `JMX_PORT` (default: 1099) and `JMX_RMI_PORT` (default: 1098). RMI will also need to have set the `JMX_RMI_HOSTNAME`, that has to represent an hostname or IP address that point to your docker image and that is accessible from your client address, for instance your Docker host hostname.
 
 Given that JMX is intended for side cars, it is attached only to localhost and not protected with SSL. Likewise, its ports are not declared in the `Dockerfile`.
 
