@@ -26,7 +26,7 @@ RUN set -x \
 
 
 # Uncompress and validate
-ENV ACTIVEMQ_ARTEMIS_VERSION 1.5.3
+ENV ACTIVEMQ_ARTEMIS_VERSION 1.5.4
 RUN set -x && \
   apk add --no-cache --virtual .gosu-deps wget gnupg && \
   mkdir /opt && cd /opt && \
