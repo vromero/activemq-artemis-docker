@@ -1,6 +1,13 @@
 # Supported tags and respective `Dockerfile` links
-
--	[`1.5.0`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.0/Dockerfile)
+-	[`1.5.5`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.5/Dockerfile)
+-	[`1.5.5-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.5-alpine/Dockerfile)
+-	[`1.5.4`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.4/Dockerfile)
+-	[`1.5.4-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.4-alpine/Dockerfile)
+-	[`1.5.3`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.3/Dockerfile)
+-	[`1.5.3-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.3-alpine/Dockerfile)
+-	[`1.5.2`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.2/Dockerfile)
+-	[`1.5.1`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.1/Dockerfile)
+-	[`1.5.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.5.0/Dockerfile)
 -	[`1.4.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.4.0/Dockerfile)
 -	[`1.3.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.3.0/Dockerfile)
 -	[`1.2.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/1.2.0/Dockerfile)
@@ -74,27 +81,55 @@ If you wish to change the default username and password of `artemis` / `simetrae
 $ docker run -d -e ARTEMIS_USERNAME=myuser -e ARTEMIS_PASSWORD=otherpassword vromero/activemq-artemis
 ```
 
-## Using a custom etc
+## Configuring JMX
 
-To mount a whole artemis `etc` directory in this image, just mount your artemis etc in the volume `/var/lib/artemis/etc`.
-Please make sure the `artemis.profile` directory includes the following two likes just as shown (and not pointing to any of your local directories):
+Due to the JMX's nature, often with dynamics ports for RMI and the need having configure the public IP address to reach the RMI server.
+It is discouraged to use JMX in Docker. Although in certain scenarios, it could be advisable, as when deploying in a
+container orchestrator such as Kubernetes or Mesos, and deploying along side this container a side car. For such cases
+the following environment variable could be used: `ENABLE_JMX`.
 
+It is also possible to set the JMX port and the JMX RMI port with these two environment variables respectively: `JMX_PORT` (default: 1099) and `JMX_RMI_PORT` (default: 1098).
+
+Given that JMX is intended for side cars, it is attached only to localhost and not protected with SSL. Likewise, its ports are not declared in the `Dockerfile`.
+
+```console
+$ docker run -d -e ENABLE_JMX=true -e JMX_PORT=1199 -e JMX_RMI_PORT=1198 vromero/activemq-artemis
 ```
-ARTEMIS_HOME='/opt/apache-artemis'
-ARTEMIS_INSTANCE='/var/lib/artemis'
+
+## Performing a performance journal test
+
+Different kinds of volumes need different values in fine tuning.
+It is possible to calculate the journal-buffer-timeout you should use with the current data folder and
+apply it directly to the broker configuration using the environment variable: `ARTEMIS_PERF_JOURNAL` with one
+of the following valid values:
+
+| Value            | Description                                                       |
+|------------------|-------------------------------------------------------------------|
+|`AUTO`            | Checks for the existence of a `.perf-journal-completed` file in the data volume, if it doesn't exist performs the calculation, applies the configuration and creates the file. |
+|`NEVER` (default) | Never do the performance journal configuration                    |
+|`ALWAYS`          | Always do the performance journal configuration                   |
+
+It is advisable to set it up in `AUTO` in non manually configured containers, although given that this image is
+often used for quick tests and non production environments it is set as NEVER as default value.
+
+```console
+$ docker run -d -e ARTEMIS_PERF_JOURNAL=AUTO vromero/activemq-artemis
 ```
-When this option is used, other configuration parameters like the ones described in : [Setting memory values](#setting-memory-values) and [Setting username and password](#setting-username-and-password) might not work.
+
+This option is available since `1.5.3`.
 
 ## Overriding parts of the configuration
 
 It is possible to mount a whole artemis `etc` directory in this image in the volume `/var/lib/artemis/etc`.
-But this is an overkill for many situations where only small tweaks are necessary. This could potentially prevent the configuration by parameters to work properly too.
+But this is an overkill for many situations where only small tweaks are necessary.  
 
-For cases where the change from the original configuration is not too big, the volume`/var/lib/artemis/etc-override` can be used.
-If a `broker.xml` file is present, it will be *merged* with the default configuration.
+For those cases `/var/lib/artemis/etc-override` can be used.
 
-For instance, lets say that you want to add a diverts section, you could have a local directory, lets say `/var/artemis-data/override`
-where you could place a broker.xml file that looks like the following listing:
+Multiple files with snippets of configuration can be dropped in the `etc-override` folder. Those configuration files must be named following the name convention `broker-{{desc}}.xml` where `desc` is a numeric representation of the snippet.
+The configuration files will be *merged* with the default configuration. An alphabetical precedence of the file names will be considered for the merge and in case of collision the latest change will be treated as final.
+
+For instance lets say that you want to add a diverts section, you could have a local directory, lets say `/var/artemis-data/etc-override`
+where you could place a `broker-00.xml` file that looks like the following listing:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -113,11 +148,8 @@ where you could place a broker.xml file that looks like the following listing:
 </configuration>
 ```
 
-For the use cases where instead of merging, the desired outcome is an override, a file named `custom-transformations.xslt`
-in `/var/lib/artemis/etc-override` is supported.
-With this transformation, that is applied before the merge, pieces of the configuration could be removed.
-
-For instance to completely override the `jms` definitions instead of merging, these files could be used:
+For the use cases where instead of merging, the desired outcome is an override, a file named `broker-00.xslt`
+in `/var/lib/artemis/etc-override` is supported. For instance to delete override the `jms` definitions instead of merging, these files could be used:
 
 `broker.xml`
 
@@ -132,7 +164,7 @@ For instance to completely override the `jms` definitions instead of merging, th
 </configuration>
 ```
 
-`custom-transformations.xslt`
+`broker-00.xslt`
 
 ```xslt
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
