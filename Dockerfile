@@ -23,7 +23,7 @@ RUN set -x \
     && gosu nobody true 
 
 # Uncompress and validate
-ENV ACTIVEMQ_ARTEMIS_VERSION 1.5.5
+ENV ACTIVEMQ_ARTEMIS_VERSION 2.0.0
 RUN set -x && \
   apk add --no-cache --virtual .gosu-deps wget gnupg && \
   mkdir /opt && cd /opt && \
