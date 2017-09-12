@@ -1,5 +1,7 @@
 # Supported tags and respective `Dockerfile` links
 
+-	[`2.2.0`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/2.2.0/Dockerfile)
+-	[`2.2.0-alpine`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/2.2.0-alpine/Dockerfile)
 -	[`2.1.0`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/2.1.0/Dockerfile)
 -	[`2.1.0-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/2.1.0-alpine/Dockerfile)
 -	[`2.0.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/2.0.0/Dockerfile)
