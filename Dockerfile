@@ -20,10 +20,10 @@ RUN set -x \
     && gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu \
     && rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc \
     && chmod +x /usr/local/bin/gosu \
-    && gosu nobody true 
+    && gosu nobody true
 
 # Uncompress and validate
-ENV ACTIVEMQ_ARTEMIS_VERSION 2.0.0
+ENV ACTIVEMQ_ARTEMIS_VERSION 2.2.0
 RUN set -x && \
   apk add --no-cache --virtual .gosu-deps wget gnupg && \
   mkdir /opt && cd /opt && \
