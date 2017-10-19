@@ -1,5 +1,7 @@
 # Supported tags and respective `Dockerfile` links
 
+-	[`2.3.0`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/2.3.0/Dockerfile)
+-	[`2.3.0-alpine`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/2.3.0-alpine/Dockerfile)
 -	[`2.2.0`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/2.2.0/Dockerfile)
 -	[`2.2.0-alpine`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/2.2.0-alpine/Dockerfile)
 -	[`2.1.0`, `latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/2.1.0/Dockerfile)
@@ -214,6 +216,9 @@ docker run -v /var/artemis-data/override:/var/lib/artemis/etc-override -it --rm 
 | `5672`  | AMQP                                                            |
 | `1883`  | MQTT                                                            |
 | `61613` | STOMP                                                           |
+
+Since Artemis `2.3.0`, there a console available in the Web Server port at
+`/console` using the login/password set up with `ARTEMIS_USERNAME` and `ARTEMIS_PASSWORD`.
 
 # License
 
