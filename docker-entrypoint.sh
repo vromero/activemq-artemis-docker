@@ -12,12 +12,12 @@ fi
 
 # Update min memory if the argument is passed
 if [[ "$ARTEMIS_MIN_MEMORY" ]]; then
-  sed -i "s/-Xms512M/-Xms$ARTEMIS_MIN_MEMORY/g" ../etc/artemis.profile
+  sed -i "s/-Xms[^ ]*/-Xms$ARTEMIS_MIN_MEMORY/g" ../etc/artemis.profile
 fi
 
 # Update max memory if the argument is passed
 if [[ "$ARTEMIS_MAX_MEMORY" ]]; then
-  sed -i "s/-Xmx1024M/-Xmx$ARTEMIS_MAX_MEMORY/g" ../etc/artemis.profile
+  sed -i "s/-Xmx[^ ]*/-Xmx$ARTEMIS_MAX_MEMORY/g" ../etc/artemis.profile
 fi
 
 if [ -f /var/lib/artemis/etc-override/broker.xslt ]; then
