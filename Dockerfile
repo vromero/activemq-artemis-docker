@@ -25,7 +25,7 @@ RUN set -x \
     && gosu nobody true
 
 # Uncompress and validate
-ENV ACTIVEMQ_ARTEMIS_VERSION 2.3.0
+ENV ACTIVEMQ_ARTEMIS_VERSION 2.4.0
 RUN cd /opt && wget -q https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-artemis/${ACTIVEMQ_ARTEMIS_VERSION}/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz && \
   wget -q https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-artemis/${ACTIVEMQ_ARTEMIS_VERSION}/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc && \
   wget -q http://apache.org/dist/activemq/KEYS && \
