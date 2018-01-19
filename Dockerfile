@@ -44,7 +44,8 @@ RUN cd /var/lib && \
     --role amq \
     --require-login \
     --cluster-user artemisCluster \
-    --cluster-password simetraehcaparetsulc
+    --cluster-password simetraehcaparetsulc \
+    --java-options '$JAVA_ARGS'
 
 # Ports are only exposed with an explicit argument, there is no need to binding
 # the web console to localhost
