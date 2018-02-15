@@ -43,12 +43,7 @@ else
 fi
 
 if [[ "$ENABLE_JMX" ]]; then
-
-  cat << 'EOF' >> $CONFIG_PATH/artemis.profile
-    if [ "$1" = "run" ]; then
-      JAVA_ARGS="$JAVA_ARGS -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=${JMX_PORT:-1099} -Dcom.sun.management.jmxremote.rmi.port=${JMX_RMI_PORT:-1098} -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
-    fi
-EOF
+  JAVA_ARGS="$JAVA_ARGS -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=${JMX_PORT:-1099} -Dcom.sun.management.jmxremote.rmi.port=${JMX_RMI_PORT:-1098} -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
 
   cp $CONFIG_PATH/broker.xml /tmp/broker.xml
   xmlstarlet tr /opt/assets/merge.xslt -s replace=true -s with=/opt/assets/enable-jmx.xml /tmp/broker.xml > /tmp/broker-merge.xml
