@@ -107,6 +107,18 @@ Given that JMX is intended for side cars, it is attached only to localhost and n
 $ docker run -d -e ENABLE_JMX=true -e JMX_PORT=1199 -e JMX_RMI_PORT=1198 vromero/activemq-artemis
 ```
 
+## Configuring CORS
+
+By default, [Jolokia security](https://jolokia.org/reference/html/security.html) only allows access to the management console and REST API from localhost.
+To access them from the network, you can configure [Cross-Origin Resource Sharing](https://www.w3.org/TR/cors/) using the environment variable `JOLOKIA_ALLOW_ORIGIN`.
+The default value is `*://localhost*`.
+
+For example, to allow access from any domain:
+
+```console
+$ docker run -d -e JOLOKIA_ALLOW_ORIGIN='*' vromero/activemq-artemis
+```
+
 ## Performing a performance journal test
 
 Different kinds of volumes need different values in fine tuning.
