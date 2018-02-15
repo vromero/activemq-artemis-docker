@@ -55,12 +55,6 @@ EOF
   mv /tmp/broker-merge.xml $CONFIG_PATH/broker.xml
 fi
 
-if [[ "$JOLOKIA_ALLOW_ORIGIN" ]]; then
-  cp $CONFIG_PATH/jolokia-access.xml /tmp/jolokia-access.xml
-  xmlstarlet tr /opt/assets/jolokia-cors.xslt -s origin="$JOLOKIA_ALLOW_ORIGIN" /tmp/jolokia-access.xml > /tmp/jolokia-access-cors.xml
-  mv /tmp/jolokia-access-cors.xml $CONFIG_PATH/jolokia-access.xml
-fi
-
 function performance-journal {
   if [[ "$ARTEMIS_PERF_JOURNAL" = "AUTO" || "$ARTEMIS_PERF_JOURNAL" = "ALWAYS" ]]; then
 
