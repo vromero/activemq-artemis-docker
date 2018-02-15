@@ -58,7 +58,6 @@ RUN chown -R artemis.artemis /var/lib/artemis
 RUN mkdir -p /opt/assets
 COPY assets/merge.xslt /opt/assets
 COPY assets/enable-jmx.xml /opt/assets
-COPY assets/jolokia-cors.xslt /opt/assets
 
 # Web Server
 EXPOSE 8161
