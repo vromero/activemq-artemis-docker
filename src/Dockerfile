@@ -9,7 +9,7 @@ LABEL maintainer="Victor Romero <victor.romero@gmail.com>"
 ARG ACTIVEMQ_ARTEMIS_VERSION
 
 # add user and group for artemis
-RUN groupadd -r artemis && useradd -r -g artemis artemis
+RUN groupadd -r artemis && useradd -r -s /bin/false -g artemis artemis
 
 RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
   apt-get -qq -o=Dpkg::Use-Pty=0 install -y --no-install-recommends \
@@ -57,7 +57,8 @@ RUN if test "${ACTIVEMQ_ARTEMIS_VERSION}" = "1.0.0" ; \
         --user artemis \
         --password simetraehcapa \
         --cluster-user artemisCluster \
-        --cluster-password simetraehcaparetsulc; \
+        --cluster-password simetraehcaparetsulc \
+        --java-options "-Djava.net.preferIPv4Addresses=true" ; \
     else \
       "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}/bin/artemis" create artemis \
         --home /opt/apache-artemis \
@@ -66,7 +67,8 @@ RUN if test "${ACTIVEMQ_ARTEMIS_VERSION}" = "1.0.0" ; \
         --role amq \
         --require-login \
         --cluster-user artemisCluster \
-        --cluster-password simetraehcaparetsulc; \
+        --cluster-password simetraehcaparetsulc \
+        --java-options "-Djava.net.preferIPv4Addresses=true" ; \
     fi 
 
 # Ports are only exposed with an explicit argument, there is no need to binding
@@ -79,20 +81,27 @@ RUN xmlstarlet ed -L -N amq="http://activemq.org/schema" \
 ##########################################################
 ## Run Image                                             #
 ##########################################################
-FROM openjdk:8-jre-alpine
+FROM openjdk:8
 LABEL maintainer="Victor Romero <victor.romero@gmail.com>"
 ARG ACTIVEMQ_ARTEMIS_VERSION
+ENV ACTIVEMQ_ARTEMIS_VERSION=$ACTIVEMQ_ARTEMIS_VERSION
 
 # add user and group for artemis
-RUN addgroup -S artemis && adduser -S -G artemis artemis
+RUN groupadd -r artemis && useradd -r -g artemis artemis
 
-RUN apk add --no-cache libaio=0.3.110-r1 xmlstarlet=1.6.1-r0 jq=1.5-r5
+RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
+  apt-get -qq -o=Dpkg::Use-Pty=0 install -y --no-install-recommends \
+    libaio1=0.3.110-3 \
+    xmlstarlet=1.6.1-2 \
+    jq=1.5+dfsg-1.3 && \
+  rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/local/bin/gosu /usr/local/bin/gosu
 COPY --from=builder "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}"
 COPY --from=builder "/var/lib/artemis" "/var/lib/artemis"
 
-RUN chown -R artemis.artemis /var/lib/artemis
+RUN ln -s "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" /opt/apache-artemis && chmod 755 /opt/apache-artemis
+RUN chown -R artemis.artemis /var/lib/artemis "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" /opt/apache-artemis
 
 RUN mkdir -p /opt/assets
 COPY assets/merge.xslt /opt/assets

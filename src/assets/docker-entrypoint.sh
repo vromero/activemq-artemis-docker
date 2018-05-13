@@ -10,18 +10,23 @@ CONFIG_PATH=$BROKER_HOME/etc
 
 # Update users and roles with if username and password is passed as argument
 if [ "$ARTEMIS_USERNAME" ] && [ "$ARTEMIS_PASSWORD" ]; then
-  sed -i "s/amq[ ]*=.*/amq=$ARTEMIS_USERNAME\n/g" ../etc/artemis-roles.properties
+  # From 1.0.0 up to 1.1.0 the artemis roles file was user=groups, later on it became group=users
+  if echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "1.[01].0" ; then
+    sed -i "s/artemis=amq/$ARTEMIS_USERNAME=amq\n/g" ../etc/artemis-roles.properties
+  else
+    sed -i "s/amq[ ]*=.*/amq=$ARTEMIS_USERNAME\n/g" ../etc/artemis-roles.properties
+  fi
   sed -i "s/artemis[ ]*=.*/$ARTEMIS_USERNAME=$ARTEMIS_PASSWORD\n/g" ../etc/artemis-users.properties
 fi
 
 # Update min memory if the argument is passed
 if [ "$ARTEMIS_MIN_MEMORY" ]; then
-  sed -i "s/-Xms[^ ]*/-Xms$ARTEMIS_MIN_MEMORY/g" ../etc/artemis.profile
+  sed -i "s/-Xms[^ \"]*/-Xms$ARTEMIS_MIN_MEMORY/g" ../etc/artemis.profile
 fi
 
 # Update max memory if the argument is passed
 if [ "$ARTEMIS_MAX_MEMORY" ]; then
-  sed -i "s/-Xmx[^ ]*/-Xmx$ARTEMIS_MAX_MEMORY/g" ../etc/artemis.profile
+  sed -i "s/-Xmx[^ \"]*/-Xmx$ARTEMIS_MAX_MEMORY/g" ../etc/artemis.profile
 fi
 
 files=$(find $OVERRIDE_PATH -name "broker*" -type f | cut -d. -f1 | sort -u );
@@ -41,13 +46,10 @@ else
 fi
 
 if [ "$ENABLE_JMX" ]; then
-  cat << 'EOF' >> $CONFIG_PATH/artemis.profile
-    if [ "$1" = "run" ]; then
-      JAVA_ARGS="$JAVA_ARGS -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=${JMX_PORT:-1099} -Dcom.sun.management.jmxremote.rmi.port=${JMX_RMI_PORT:-1098} -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
-    fi
-EOF
-
-  xmlstarlet tr --inplace /opt/assets/merge.xslt -s replace=true -s with=/opt/assets/enable-jmx.xml $CONFIG_PATH/broker.xml
+  sed -i "s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=${JMX_PORT:-1099} -Dcom.sun.management.jmxremote.rmi.port=${JMX_RMI_PORT:-1098} -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false /g" $CONFIG_PATH/artemis.profile
+  cp $CONFIG_PATH/broker.xml /tmp/broker.xml
+  xmlstarlet tr /opt/assets/merge.xslt -s replace=true -s with=/opt/assets/enable-jmx.xml /tmp/broker.xml > /tmp/broker-merge.xml
+  mv /tmp/broker-merge.xml "$CONFIG_PATH/broker.xml"
 fi
 
 if [ -e /var/lib/artemis/etc/jolokia-access.xml ]; then
@@ -62,7 +64,7 @@ performanceJournal() {
       return
     fi
 
-    echo "Calculating performance journal ... \c"
+    echo "Calculating performance journal ... "
     RECOMMENDED_JOURNAL_BUFFER=$(gosu artemis "./artemis" "perf-journal" | grep "<journal-buffer-timeout" | xmlstarlet sel -t -c '/journal-buffer-timeout/text()' || true)
     if [ -z "$RECOMMENDED_JOURNAL_BUFFER" ]; then
       echo "There was an error calculating the performance journal, gracefully handling it"
