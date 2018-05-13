@@ -9,30 +9,30 @@ OVERRIDE_PATH=$BROKER_HOME/etc-override
 CONFIG_PATH=$BROKER_HOME/etc
 
 # Update users and roles with if username and password is passed as argument
-if [[ "$ARTEMIS_USERNAME" && "$ARTEMIS_PASSWORD" ]]; then
+if [ "$ARTEMIS_USERNAME" ] && [ "$ARTEMIS_PASSWORD" ]; then
   sed -i "s/amq[ ]*=.*/amq=$ARTEMIS_USERNAME\n/g" ../etc/artemis-roles.properties
   sed -i "s/artemis[ ]*=.*/$ARTEMIS_USERNAME=$ARTEMIS_PASSWORD\n/g" ../etc/artemis-users.properties
 fi
 
 # Update min memory if the argument is passed
-if [[ "$ARTEMIS_MIN_MEMORY" ]]; then
+if [ "$ARTEMIS_MIN_MEMORY" ]; then
   sed -i "s/-Xms[^ ]*/-Xms$ARTEMIS_MIN_MEMORY/g" ../etc/artemis.profile
 fi
 
 # Update max memory if the argument is passed
-if [[ "$ARTEMIS_MAX_MEMORY" ]]; then
+if [ "$ARTEMIS_MAX_MEMORY" ]; then
   sed -i "s/-Xmx[^ ]*/-Xmx$ARTEMIS_MAX_MEMORY/g" ../etc/artemis.profile
 fi
 
 files=$(find $OVERRIDE_PATH -name "broker*" -type f | cut -d. -f1 | sort -u );
 if [ ${#files[@]} ]; then
   for f in $files; do
-    if [ -f $f.xslt ]; then
-      xmlstarlet tr $f.xslt $CONFIG_PATH/broker.xml > /tmp/broker-tr.xml
+    if [ -f "$f.xslt" ]; then
+      xmlstarlet tr "$f.xslt" $CONFIG_PATH/broker.xml > /tmp/broker-tr.xml
       mv /tmp/broker-tr.xml $CONFIG_PATH/broker.xml
     fi
-    if [ -f $f.xml ]; then
-      xmlstarlet tr /opt/assets/merge.xslt -s replace=true -s with=$f.xml $CONFIG_PATH/broker.xml > /tmp/broker-merge.xml
+    if [ -f "$f.xml" ]; then
+      xmlstarlet tr /opt/assets/merge.xslt -s replace=true -s with="$f.xml" $CONFIG_PATH/broker.xml > /tmp/broker-merge.xml
       mv /tmp/broker-merge.xml $CONFIG_PATH/broker.xml
     fi
   done
@@ -40,7 +40,7 @@ else
   echo No configuration snippets found
 fi
 
-if [[ "$ENABLE_JMX" ]]; then
+if [ "$ENABLE_JMX" ]; then
   cat << 'EOF' >> $CONFIG_PATH/artemis.profile
     if [ "$1" = "run" ]; then
       JAVA_ARGS="$JAVA_ARGS -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=${JMX_PORT:-1099} -Dcom.sun.management.jmxremote.rmi.port=${JMX_RMI_PORT:-1098} -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
@@ -50,19 +50,19 @@ EOF
   xmlstarlet tr --inplace /opt/assets/merge.xslt -s replace=true -s with=/opt/assets/enable-jmx.xml $CONFIG_PATH/broker.xml
 fi
 
-if [[ -e /var/lib/artemis/etc/jolokia-access.xml ]]; then
+if [ -e /var/lib/artemis/etc/jolokia-access.xml ]; then
   xmlstarlet ed --inplace -u '/restrict/cors/allow-origin' -v "${JOLOKIA_ALLOW_ORIGIN:-*}" /var/lib/artemis/etc/jolokia-access.xml
 fi
 
-function performanceJournal {
-  if [[ "$ARTEMIS_PERF_JOURNAL" = "AUTO" || "$ARTEMIS_PERF_JOURNAL" = "ALWAYS" ]]; then
+performanceJournal() {
+  if [ "$ARTEMIS_PERF_JOURNAL" = "AUTO" ] || [ "$ARTEMIS_PERF_JOURNAL" = "ALWAYS" ]; then
 
-    if [[ -e /var/lib/artemis/data/.perf-journal-completed ]]; then
+    if [ -e /var/lib/artemis/data/.perf-journal-completed ]; then
       echo "Volume's journal buffer already fine tuned"
       return
     fi
 
-    echo -n "Calculating performance journal ... "
+    echo "Calculating performance journal ... \c"
     RECOMMENDED_JOURNAL_BUFFER=$(gosu artemis "./artemis" "perf-journal" | grep "<journal-buffer-timeout" | xmlstarlet sel -t -c '/journal-buffer-timeout/text()' || true)
     if [ -z "$RECOMMENDED_JOURNAL_BUFFER" ]; then
       echo "There was an error calculating the performance journal, gracefully handling it"
@@ -74,9 +74,9 @@ function performanceJournal {
       -N core="urn:activemq:core" \
       -u "/activemq:configuration/core:core/core:journal-buffer-timeout" \
       -v "$RECOMMENDED_JOURNAL_BUFFER" ../etc/broker.xml
-      echo $RECOMMENDED_JOURNAL_BUFFER
+      echo "$RECOMMENDED_JOURNAL_BUFFER"
 
-    if [[ "$ARTEMIS_PERF_JOURNAL" = "AUTO" ]]; then
+    if [ "$ARTEMIS_PERF_JOURNAL" = "AUTO" ]; then
       touch /var/lib/artemis/data/.perf-journal-completed
     fi
   fi
