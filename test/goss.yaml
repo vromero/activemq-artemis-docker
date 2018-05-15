@@ -1,0 +1,110 @@
+
+port:
+  tcp:8161:
+    listening: true
+
+user:
+  artemis:
+    exists: true
+    groups:
+      - artemis
+
+group:
+  artemis:
+    exists: true
+
+process:
+  java:
+    running: true
+
+file:
+  /opt/apache-artemis:
+    exists: true
+    owner: artemis
+    group: artemis
+    filetype: symlink
+    linked-to: /opt/apache-artemis-{{ .Env.ACTIVEMQ_ARTEMIS_VERSION }}
+  
+  /opt/apache-artemis-{{ .Env.ACTIVEMQ_ARTEMIS_VERSION }}:
+    exists: true
+    owner: artemis
+    group: artemis
+    filetype: directory
+
+  /var/lib/artemis:
+    exists: true
+    owner: artemis
+    group: artemis
+    filetype: directory
+  
+  /var/lib/artemis/data:
+    exists: true
+    owner: artemis
+    group: artemis
+    filetype: directory
+
+  /var/lib/artemis/etc/artemis-users.properties:
+    exists: true
+    owner: artemis
+    group: artemis
+    filetype: file
+{{if (getEnv "ARTEMIS_PASSWORD") }}
+    contains: [{{.Env.ARTEMIS_USERNAME }}={{ .Env.ARTEMIS_PASSWORD }}]
+{{end}}
+
+  /var/lib/artemis/etc/artemis-roles.properties:
+    exists: true
+    owner: artemis
+    group: artemis
+    filetype: file
+{{if (getEnv "ARTEMIS_USERNAME") }}
+    contains: 
+  {{ if and (getEnv "ACTIVEMQ_ARTEMIS_VERSION" "") (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "1.[01].0") }}
+      - /{{ .Env.ARTEMIS_USERNAME }} *= *amq/
+  {{ else }}
+      - /amq *= *{{ .Env.ARTEMIS_USERNAME }}/
+  {{ end }}
+{{ else }}
+    contains: 
+  {{ if and (getEnv "ACTIVEMQ_ARTEMIS_VERSION" "") (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "1.[01].0") }}
+      - /artemis *= *amq/
+  {{ else }}
+      - /amq *= *artemis/
+  {{ end }}
+{{end}}
+
+  /var/lib/artemis/data/.perf-journal-completed:
+{{ if and (getEnv "ARTEMIS_PERF_JOURNAL" "") (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "(1.5.[3-5]|[^1]\\.\\d+\\.\\d+)") }}
+    exists: true
+    owner: root
+    group: root
+    filetype: file
+{{ else }}
+    exists: false
+{{ end }}
+
+  /var/lib/artemis/etc/artemis.profile:
+    exists: true
+    owner: artemis
+    group: artemis
+    filetype: file
+{{ if or (getEnv "ARTEMIS_MIN_MEMORY") (getEnv "ARTEMIS_MAX_MEMORY") (getEnv "ENABLE_JMX") }}
+    contains:
+  {{if getEnv "ARTEMIS_MIN_MEMORY" }}
+      - "-Xms{{ .Env.ARTEMIS_MIN_MEMORY }}"
+  {{end}}
+  {{if getEnv "ARTEMIS_MAX_MEMORY" }}
+      - "-Xmx{{ .Env.ARTEMIS_MAX_MEMORY }}"
+  {{end}}
+  {{if getEnv "ENABLE_JMX" }}
+      - "-Dcom.sun.management.jmxremote=true"
+      {{ if getEnv "JMX_PORT" }}
+      - "-Dcom.sun.management.jmxremote.port={{ .Env.JMX_PORT }}"
+      {{ end }}
+      {{ if getEnv "JMX_PORT" }}
+      - "-Dcom.sun.management.jmxremote.rmi.port={{ .Env.JMX_RMI_PORT }}"
+      {{ end }}
+      - "-Dcom.sun.management.jmxremote.ssl=false"
+      - "-Dcom.sun.management.jmxremote.authenticate=false"
+  {{end}}
+{{end}}
