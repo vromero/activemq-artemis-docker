@@ -88,13 +88,21 @@ file:
     owner: artemis
     group: artemis
     filetype: file
-{{ if or (getEnv "ARTEMIS_MIN_MEMORY") (getEnv "ARTEMIS_MAX_MEMORY") (getEnv "ENABLE_JMX") }}
     contains:
+      - "-Djava.net.preferIPv4Addresses=true"
+      - "-XX:+UnlockExperimentalVMOptions"
+      - "-XX:+UseCGroupMemoryLimitForHeap"
+      - "-XX:MaxRAMFraction=2"
+{{ if or (getEnv "ARTEMIS_MIN_MEMORY") (getEnv "ARTEMIS_MAX_MEMORY") (getEnv "ENABLE_JMX") }}
   {{if getEnv "ARTEMIS_MIN_MEMORY" }}
       - "-Xms{{ .Env.ARTEMIS_MIN_MEMORY }}"
+  {{else}}
+      - "!-Xms"  
   {{end}}
   {{if getEnv "ARTEMIS_MAX_MEMORY" }}
       - "-Xmx{{ .Env.ARTEMIS_MAX_MEMORY }}"
+  {{ else }}
+      - "!-Xmx"
   {{end}}
   {{if getEnv "ENABLE_JMX" }}
       - "-Dcom.sun.management.jmxremote=true"
