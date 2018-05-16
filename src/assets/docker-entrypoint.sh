@@ -88,7 +88,7 @@ performanceJournal() {
 performanceJournal
 
 if [ "$1" = 'artemis-server' ]; then
-	set -- gosu artemis "sh" "./artemis" "run"
+	dumb-init -- sh ./artemis run
 fi
 
 exec "$@"

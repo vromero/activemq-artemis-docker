@@ -8,9 +8,6 @@ LABEL maintainer="Victor Romero <victor.romero@gmail.com>"
 
 ARG ACTIVEMQ_ARTEMIS_VERSION
 
-# add user and group for artemis
-RUN groupadd -r artemis && useradd -r -s /bin/false -g artemis artemis
-
 RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
   apt-get -qq -o=Dpkg::Use-Pty=0 install -y --no-install-recommends \
     libaio1=0.3.110-3 \
@@ -19,23 +16,6 @@ RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
     ca-certificates=20161130+nmu1 \
     wget=1.18-5+deb9u2 && \
   rm -rf /var/lib/apt/lists/*
-
-# grab gosu for easy step-down from root
-ENV GOSU_VERSION 1.10
-RUN set -ex; \
-  dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
-  wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch"; \
-  wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
-  # verify the signature
-  GNUPGHOME="$(mktemp -d)"; \
-  export GNUPGHOME; \
-  gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 || \
-    gpg --keyserver p80.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 || \
-    gpg --keyserver pgp.mit.edu --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
-  gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
-  chmod +x /usr/local/bin/gosu; \
-  # verify that the binary works
-  gosu nobody true;
 
 # Uncompress and validate
 WORKDIR /opt
@@ -82,7 +62,6 @@ RUN xmlstarlet ed -L -N amq="http://activemq.org/schema" \
 # that the performance journal calibration is already completed
 RUN if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq  "(1.5\\.[3-5]|[^1]\\.[0-9]\\.[0-9]+)" ) ; then touch /var/lib/artemis/data/.perf-journal-completed; fi
 
-
 ##########################################################
 ## Run Image                                             #
 ##########################################################
@@ -98,15 +77,15 @@ RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
   apt-get -qq -o=Dpkg::Use-Pty=0 install -y --no-install-recommends \
     libaio1=0.3.110-3 \
     xmlstarlet=1.6.1-2 \
-    jq=1.5+dfsg-1.3 && \
+    jq=1.5+dfsg-1.3 \
+    dumb-init=1.2.0-1 && \
   rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /usr/local/bin/gosu /usr/local/bin/gosu
 COPY --from=builder "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}"
 COPY --from=builder "/var/lib/artemis" "/var/lib/artemis"
 
 RUN ln -s "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" /opt/apache-artemis && chmod 755 /opt/apache-artemis
-RUN chown -R artemis.artemis /var/lib/artemis "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" /opt/apache-artemis
+RUN chown -R artemis.artemis /var/lib/artemis
 
 RUN mkdir -p /opt/assets
 COPY assets/merge.xslt /opt/assets
@@ -137,6 +116,8 @@ VOLUME ["/var/lib/artemis/etc"]
 VOLUME ["/var/lib/artemis/etc-override"]
 
 WORKDIR /var/lib/artemis/bin
+
+USER artemis
 
 COPY assets/docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]

@@ -20,15 +20,15 @@ process:
 file:
   /opt/apache-artemis:
     exists: true
-    owner: artemis
-    group: artemis
+    owner: root
+    group: root
     filetype: symlink
     linked-to: /opt/apache-artemis-{{ .Env.ACTIVEMQ_ARTEMIS_VERSION }}
   
   /opt/apache-artemis-{{ .Env.ACTIVEMQ_ARTEMIS_VERSION }}:
     exists: true
-    owner: artemis
-    group: artemis
+    owner: root
+    group: root
     filetype: directory
 
   /var/lib/artemis:
@@ -76,8 +76,8 @@ file:
   /var/lib/artemis/data/.perf-journal-completed:
 {{ if .Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "(1.5.[3-5]|[^1]\\.\\d+\\.\\d+)" }}
     exists: true
-    owner: root
-    group: root
+    owner: artemis
+    group: artemis
     filetype: file
 {{ else }}
     exists: false

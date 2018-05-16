@@ -20,23 +20,6 @@ RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
     wget=1.18-5+deb9u2 && \
   rm -rf /var/lib/apt/lists/*
 
-# grab gosu for easy step-down from root
-ENV GOSU_VERSION 1.10
-RUN set -ex; \
-  dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
-  wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch"; \
-  wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
-  # verify the signature
-  GNUPGHOME="$(mktemp -d)"; \
-  export GNUPGHOME; \
-  gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 || \
-    gpg --keyserver p80.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 || \
-    gpg --keyserver pgp.mit.edu --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
-  gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
-  chmod +x /usr/local/bin/gosu; \
-  # verify that the binary works
-  gosu nobody true;
-
 # Uncompress and validate
 WORKDIR /opt
 RUN wget "https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-artemis/${ACTIVEMQ_ARTEMIS_VERSION}/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz" && \
@@ -91,14 +74,13 @@ ENV ACTIVEMQ_ARTEMIS_VERSION=$ACTIVEMQ_ARTEMIS_VERSION
 # add user and group for artemis
 RUN addgroup -S artemis && adduser -S -G artemis artemis
 
-RUN apk add --no-cache libaio=0.3.110-r1 xmlstarlet=1.6.1-r0 jq=1.5-r5
+RUN apk add --no-cache libaio=0.3.110-r1 xmlstarlet=1.6.1-r0 jq=1.5-r5 dumb-init=1.2.0-r0
 
-COPY --from=builder /usr/local/bin/gosu /usr/local/bin/gosu
 COPY --from=builder "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}"
 COPY --from=builder "/var/lib/artemis" "/var/lib/artemis"
 
 RUN ln -s "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" /opt/apache-artemis
-RUN chown -R artemis.artemis /var/lib/artemis "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" /opt/apache-artemis
+RUN chown -R artemis.artemis /var/lib/artemis 
 
 RUN mkdir -p /opt/assets
 COPY assets/merge.xslt /opt/assets
@@ -129,6 +111,8 @@ VOLUME ["/var/lib/artemis/etc"]
 VOLUME ["/var/lib/artemis/etc-override"]
 
 WORKDIR /var/lib/artemis/bin
+
+USER artemis
 
 COPY assets/docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
