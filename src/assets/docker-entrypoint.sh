@@ -21,12 +21,12 @@ fi
 
 # Update min memory if the argument is passed
 if [ "$ARTEMIS_MIN_MEMORY" ]; then
-  sed -i "s/-Xms[^ \"]*/-Xms$ARTEMIS_MIN_MEMORY/g" ../etc/artemis.profile
+  sed -i "s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Xms$ARTEMIS_MIN_MEMORY /g" $CONFIG_PATH/artemis.profile
 fi
 
 # Update max memory if the argument is passed
 if [ "$ARTEMIS_MAX_MEMORY" ]; then
-  sed -i "s/-Xmx[^ \"]*/-Xmx$ARTEMIS_MAX_MEMORY/g" ../etc/artemis.profile
+  sed -i "s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Xmx$ARTEMIS_MAX_MEMORY /g" $CONFIG_PATH/artemis.profile
 fi
 
 files=$(find $OVERRIDE_PATH -name "broker*" -type f | cut -d. -f1 | sort -u );
@@ -66,7 +66,7 @@ performanceJournal() {
     fi
 
     echo "Calculating performance journal ... "
-    RECOMMENDED_JOURNAL_BUFFER=$(gosu artemis "./artemis" "perf-journal" | grep "<journal-buffer-timeout" | xmlstarlet sel -t -c '/journal-buffer-timeout/text()' || true)
+    RECOMMENDED_JOURNAL_BUFFER=$("./artemis" "perf-journal" | grep "<journal-buffer-timeout" | xmlstarlet sel -t -c '/journal-buffer-timeout/text()' || true)
     if [ -z "$RECOMMENDED_JOURNAL_BUFFER" ]; then
       echo "There was an error calculating the performance journal, gracefully handling it"
       return
@@ -85,7 +85,9 @@ performanceJournal() {
   fi
 }
 
-performanceJournal
+if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq  "(1.5\\.[3-5]|[^1]\\.[0-9]\\.[0-9]+)" ) ; then 
+  performanceJournal
+fi
 
 if [ "$1" = 'artemis-server' ]; then
 	dumb-init -- sh ./artemis run

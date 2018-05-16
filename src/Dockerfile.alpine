@@ -32,6 +32,7 @@ RUN wget "https://repository.apache.org/content/repositories/releases/org/apache
   rm -f "apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz" "KEYS" "apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc"
 
 # Create broker instance
+# Per recommendation of https://activemq.apache.org/artemis/docs/latest/perf-tuning.html : -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:+UseParallelOldGC 
 WORKDIR /var/lib
 RUN if test "${ACTIVEMQ_ARTEMIS_VERSION}" = "1.0.0" ; \
     then \
@@ -40,7 +41,7 @@ RUN if test "${ACTIVEMQ_ARTEMIS_VERSION}" = "1.0.0" ; \
         --user artemis \
         --password simetraehcapa \
         --cluster-user artemisCluster \
-        --cluster-password simetraehcaparetsulc; \
+        --cluster-password simetraehcaparetsulc ; \
     else \
       "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}/bin/artemis" create artemis \
         --home /opt/apache-artemis \
@@ -49,15 +50,23 @@ RUN if test "${ACTIVEMQ_ARTEMIS_VERSION}" = "1.0.0" ; \
         --role amq \
         --require-login \
         --cluster-user artemisCluster \
-        --cluster-password simetraehcaparetsulc; \
+        --cluster-password simetraehcaparetsulc ; \
     fi 
+
+WORKDIR /var/lib/artemis/etc
+
+# --java-options doesn't seem to work across the board on all versions adding them manually
+RUN sed -i "s/JAVA_ARGS=\"/JAVA_ARGS=\"-Djava.net.preferIPv4Addresses=true -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=2 /g" ../etc/artemis.profile
 
 # Ports are only exposed with an explicit argument, there is no need to binding
 # the web console to localhost
-WORKDIR /var/lib/artemis/etc
 RUN xmlstarlet ed -L -N amq="http://activemq.org/schema" \
     -u "/amq:broker/amq:web/@bind" \
     -v "http://0.0.0.0:8161" bootstrap.xml
+
+# Remove default values for memory in artemis profile in order to let the automatic
+# Java ergonomics detection work https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/ergonomics.html
+RUN sed -i "s/-Xm[xs][^ \"]*//g" ../etc/artemis.profile
 
 # For the casual run of the image make the docker-entrypoint-sh think 
 # that the performance journal calibration is already completed

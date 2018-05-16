@@ -34,7 +34,7 @@
 You can find how to run this image in the section *Running the image*. Beware as the default 
 configuration is not recommended for production usage, at the very least you'll want to set your own 
 login and password. This is described with detail in section *Setting the username and password*.
-It's likely that you'll also want to set some customized memory limits, this is described in
+In case you also want to set some customized memory limits, this is described in
 *Setting the memory values*.
 
 ActiveMQ Artemis typically persists the queue state to disk. In order to leverage the most of your
@@ -101,7 +101,10 @@ docker run -it --rm \
 
 ## Setting the memory values
 
-By default Artemis will use 512 Megabytes or RAM at minimum and 2048 Megabytes at maximum. You can set the memory that you application needs by using the parameters `ARTEMIS_MIN_MEMORY` and `ARTEMIS_MAX_MEMORY`:
+By default this image does leverage the new features that came in Java 8u131 related to memory ergonomics in containerized environments, more information about it [here](https://developers.redhat.com/blog/2017/03/14/java-inside-docker/). 
+
+It does use a `-XX:MaxRAMFraction=2` meaning that half of the memory made avaiable to the container will be used by the Java heap, leaving the other half for other types of Java memory and other OS purposes. However, in some
+circumstances it might be advisable to fine tune the memory to manual values, in that case you can set the memory that you application needs by using the parameters `ARTEMIS_MIN_MEMORY` and `ARTEMIS_MAX_MEMORY`:
 
 ```console
 docker run -it --rm \
