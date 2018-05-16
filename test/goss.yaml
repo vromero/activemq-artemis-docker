@@ -74,7 +74,7 @@ file:
 {{end}}
 
   /var/lib/artemis/data/.perf-journal-completed:
-{{ if and (getEnv "ARTEMIS_PERF_JOURNAL" "") (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "(1.5.[3-5]|[^1]\\.\\d+\\.\\d+)") }}
+{{ if .Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "(1.5.[3-5]|[^1]\\.\\d+\\.\\d+)" }}
     exists: true
     owner: root
     group: root

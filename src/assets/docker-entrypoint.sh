@@ -57,7 +57,8 @@ if [ -e /var/lib/artemis/etc/jolokia-access.xml ]; then
 fi
 
 performanceJournal() {
-  if [ "$ARTEMIS_PERF_JOURNAL" = "AUTO" ] || [ "$ARTEMIS_PERF_JOURNAL" = "ALWAYS" ]; then
+  perfJournalConfiguration=${ARTEMIS_PERF_JOURNAL:-AUTO}
+  if [ "$perfJournalConfiguration" = "AUTO" ] || [ "$perfJournalConfiguration" = "ALWAYS" ]; then
 
     if [ -e /var/lib/artemis/data/.perf-journal-completed ]; then
       echo "Volume's journal buffer already fine tuned"
@@ -78,7 +79,7 @@ performanceJournal() {
       -v "$RECOMMENDED_JOURNAL_BUFFER" ../etc/broker.xml
       echo "$RECOMMENDED_JOURNAL_BUFFER"
 
-    if [ "$ARTEMIS_PERF_JOURNAL" = "AUTO" ]; then
+    if [ "$perfJournalConfiguration" = "AUTO" ]; then
       touch /var/lib/artemis/data/.perf-journal-completed
     fi
   fi

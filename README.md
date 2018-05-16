@@ -1,4 +1,4 @@
-![latest 2.5.0](https://img.shields.io/badge/latest-2.5.0-green.svg?style=flat) ![License MIT](https://img.shields.io/badge/license-APACHE-blue.svg) [![Build Status](https://travis-ci.org/vromero/activemq-artemis-docker.svg?branch=master)](https://travis-ci.org/vromero/activemq-artemis-docker) [![](https://img.shields.io/docker/stars/vromero/activemq-artemis.svg)](https://hub.docker.com/r/vromero/activemq-artemis 'DockerHub') [![](https://img.shields.io/docker/pulls/vromero/activemq-artemis.svg)](https://hub.docker.com/r/vromero/activemq-artemis 'DockerHub')
+![latest 2.5.0](https://img.shields.io/badge/latest-2.5.0-green.svg?style=flat) ![License MIT](https://img.shields.io/badge/license-APACHE-blue.svg) [![Build Status](https://travis-ci.org/vromero/activemq-artemis-docker.svg?branch=master)](https://travis-ci.org/vromero/activemq-artemis-docker) [![](https://img.shields.io/docker/stars/vromero/activemq-artemis.svg)](https://hub.docker.com/r/vromero/activemq-artemis 'DockerHub') [![](https://img.shields.io/docker/pulls/vromero/activemq-artemis.svg)](https://hub.docker.com/r/vromero/activemq-artemis 'DockerHub') [![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/vromero)
 
 # What is ActiveMQ Artemis?
 
@@ -101,7 +101,7 @@ docker run -it --rm \
 
 ## Setting the memory values
 
-By default Artemis will use 512 Megabytes or RAM at minimum and 2048 Megabytes at maximum. You can set the memory that you application needs by using the parameters `ARTEMIS__MIN_MEMORY` and `ARTEMIS_MAX_MEMORY`:
+By default Artemis will use 512 Megabytes or RAM at minimum and 2048 Megabytes at maximum. You can set the memory that you application needs by using the parameters `ARTEMIS_MIN_MEMORY` and `ARTEMIS_MAX_MEMORY`:
 
 ```console
 docker run -it --rm \
@@ -115,26 +115,25 @@ The format of the values passed is the same than the format used for the Java `-
 
 ## Performing a performance journal test
 
-Different kinds of volumes need different values in fine tuning.
-It is possible to calculate the journal-buffer-timeout you should use with the current data folder and
-apply it directly to the broker configuration using the environment variable: `ARTEMIS_PERF_JOURNAL` with one of the following valid values:
+Different kinds of volumes need different values in fine tuning. In ActiveMQ Artemis the `journal-buffer-timeout` is oftentimes configured for this purpose.
+**Since `1.5.3`** it is possible to calculate the optimal value automatically. This image supports this automation using the environment variable: `ARTEMIS_PERF_JOURNAL` with one of the following values:
 
 | Value            | Description                                                       |
 |------------------|-------------------------------------------------------------------|
-|`AUTO`            | Checks for the existence of a `.perf-journal-completed` file in the data volume, if it doesn't exist performs the calculation, applies the configuration and creates the file. |
-|`NEVER` (default) | Never do the performance journal configuration                    |
+|`AUTO` (default)  | Checks for the existence of a `.perf-journal-completed` file in the data volume, if it doesn't exist performs the calculation, applies the configuration and creates the file. |
+|`NEVER`           | Never do the performance journal configuration                    |
 |`ALWAYS`          | Always do the performance journal configuration                   |
 
-It is advisable to set it up in `AUTO` in non manually configured containers, although given that this image is
-often used for quick tests and non production environments it is set as NEVER as default value.
+It is safe to leave it as `AUTO` even for the casual usage of this image given that the image already have 
+incorporated a `.perf-journal-completed` for its internal directory used when no volume is mounted.
+One example of execution with the performance journal calibration set to be executed always can be found
+in the next listing:
 
 ```console
 docker run -it --rm \
-  -e ARTEMIS_PERF_JOURNAL=AUTO \
+  -e ARTEMIS_PERF_JOURNAL=ALWAYS \
   vromero/activemq-artemis
 ```
-
-This option is available since `1.5.3`.
 
 ## Enabling JMX
 

@@ -76,6 +76,10 @@ RUN xmlstarlet ed -L -N amq="http://activemq.org/schema" \
     -u "/amq:broker/amq:web/@bind" \
     -v "http://0.0.0.0:8161" bootstrap.xml
 
+# For the casual run of the image make the docker-entrypoint-sh think 
+# that the performance journal calibration is already completed
+RUN if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq  "(1.5\\.[3-5]|[^1]\\.[0-9]\\.[0-9]+)" ) ; then touch /var/lib/artemis/data/.perf-journal-completed; fi
+
 ##########################################################
 ## Run Image                                             #
 ##########################################################
