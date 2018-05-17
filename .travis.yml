@@ -47,7 +47,7 @@ install:
 
 before_script:
   - versionTag="${VERSION}${VARIANT:+-${VARIANT}}"
-  - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false"]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin; fi
+  - if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ $TRAVIS_BRANCH == "master" ]]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin; fi
 
 script:
   - |
@@ -55,6 +55,10 @@ script:
       set -Eeuo pipefail
       set -x
       travis_retry make $versionTag 
-      if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false"]; then travis_retry make push_$versionTag; fi
+      echo ---------------------------
+      echo $TRAVIS_PULL_REQUEST
+      echo $TRAVIS_BRANCH
+      echo ---------------------------
+      if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ $TRAVIS_BRANCH == "master" ]]; then travis_retry make push_$versionTag; fi
     )
 
