@@ -1,12 +1,12 @@
 #!/bin/sh
 set -e
 
-# Log to tty to enable docker logs container-name
-sed -i "s/logger.handlers=.*/logger.handlers=CONSOLE/g" ../etc/logging.properties
-
-BROKER_HOME=/var/lib/artemis/
+BROKER_HOME=/var/lib/artemis
 OVERRIDE_PATH=$BROKER_HOME/etc-override
 CONFIG_PATH=$BROKER_HOME/etc
+
+# Log to tty to enable docker logs container-name
+sed -i "s/logger.handlers=.*/logger.handlers=CONSOLE/g" ${CONFIG_PATH}/logging.properties
 
 # Update users and roles with if username and password is passed as argument
 if [ "$ARTEMIS_USERNAME" ] && [ "$ARTEMIS_PASSWORD" ]; then
@@ -29,6 +29,10 @@ if [ "$ARTEMIS_MAX_MEMORY" ]; then
   sed -i "s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Xmx$ARTEMIS_MAX_MEMORY /g" $CONFIG_PATH/artemis.profile
 fi
 
+mergeXmlFiles() {
+  xmlmerge --compact "$1" "$2" -o "$3"
+}
+
 files=$(find $OVERRIDE_PATH -name "broker*" -type f | cut -d. -f1 | sort -u );
 if [ ${#files[@]} ]; then
   for f in $files; do
@@ -37,8 +41,7 @@ if [ ${#files[@]} ]; then
       mv /tmp/broker-tr.xml $CONFIG_PATH/broker.xml
     fi
     if [ -f "$f.xml" ]; then
-      xmlstarlet tr /opt/assets/merge.xslt -s replace=true -s with="$f.xml" $CONFIG_PATH/broker.xml > /tmp/broker-merge.xml
-      mv /tmp/broker-merge.xml $CONFIG_PATH/broker.xml
+      mergeXmlFiles "$CONFIG_PATH/broker.xml" "$f.xml" "$CONFIG_PATH/broker.xml"
     fi
   done
 else
@@ -47,9 +50,7 @@ fi
 
 if [ "$ENABLE_JMX" ]; then
   sed -i "s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=${JMX_PORT:-1099} -Dcom.sun.management.jmxremote.rmi.port=${JMX_RMI_PORT:-1098} -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false /g" $CONFIG_PATH/artemis.profile
-  cp $CONFIG_PATH/broker.xml /tmp/broker.xml
-  xmlstarlet tr /opt/assets/merge.xslt -s replace=true -s with=/opt/assets/enable-jmx.xml /tmp/broker.xml > /tmp/broker-merge.xml
-  mv /tmp/broker-merge.xml "$CONFIG_PATH/broker.xml"
+  mergeXmlFiles "$CONFIG_PATH/broker.xml" /opt/assets/enable-jmx.xml "$CONFIG_PATH/broker.xml"
 fi
 
 if [ -e /var/lib/artemis/etc/jolokia-access.xml ]; then
