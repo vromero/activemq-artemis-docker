@@ -48,8 +48,13 @@ file:
     owner: artemis
     group: artemis
     filetype: file
+    contains:
 {{if (getEnv "ARTEMIS_PASSWORD") }}
-    contains: [{{.Env.ARTEMIS_USERNAME }}={{ .Env.ARTEMIS_PASSWORD }}]
+  {{ if and (getEnv "ACTIVEMQ_ARTEMIS_VERSION" "") (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "1.[0-4].0") }}
+      - {{.Env.ARTEMIS_USERNAME }}={{ .Env.ARTEMIS_PASSWORD }}
+  {{ else }}
+      - /{{.Env.ARTEMIS_USERNAME }} *= *ENC/
+  {{ end }}
 {{end}}
 
   /var/lib/artemis/etc/artemis-roles.properties:
