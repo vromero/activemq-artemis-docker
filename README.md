@@ -206,6 +206,7 @@ where you could place a `broker-00.xml` file that looks like the following listi
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 
 <configuration xmlns="urn:activemq" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:activemq /schema/artemis-configuration.xsd">
+   <!-- from 1.0.0 to 1.5.5 the following line should be : <core xmlns="urn:activemq:core"> -->
    <core xmlns="urn:activemq:core" xsi:schemaLocation="urn:activemq:core ">
       <diverts>
          <divert name="order-divert">
