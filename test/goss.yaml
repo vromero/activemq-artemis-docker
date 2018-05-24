@@ -1,4 +1,14 @@
 
+{{if (.Vars.flags.testmerge) }}
+command:
+  xmlstarlet sel -N activemq="urn:activemq" -N core="urn:activemq:core" -t -v "activemq:configuration/core:core/core:security-enabled" /var/lib/artemis/etc/broker.xml:
+    exit-status: 0
+    stdout:
+    - false
+    stderr: []
+    timeout: 1000
+{{end}}
+
 port:
   tcp:8161:
     listening: true
