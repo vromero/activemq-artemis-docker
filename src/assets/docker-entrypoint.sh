@@ -38,7 +38,8 @@ if [ "$ARTEMIS_MAX_MEMORY" ]; then
 fi
 
 mergeXmlFiles() {
-  xmlmerge --compact "$1" "$2" -o "$3"
+  xmlstarlet tr /opt/assets/merge.xslt -s replace=true -s with="$2" "$1" > /tmp/broker-merge.xml
+  mv /tmp/broker-merge.xml "$3"
 }
 
 files=$(find $OVERRIDE_PATH -name "broker*" -type f | cut -d. -f1 | sort -u );

@@ -83,7 +83,7 @@ ENV ACTIVEMQ_ARTEMIS_VERSION=$ACTIVEMQ_ARTEMIS_VERSION
 # add user and group for artemis
 RUN addgroup -S artemis && adduser -S -G artemis artemis
 
-RUN apk add --no-cache libaio=0.3.110-r1 xmlstarlet=1.6.1-r0 jq=1.5-r5 dumb-init=1.2.0-r0 gwenhywfar=4.18.0-r0
+RUN apk add --no-cache libaio=0.3.110-r1 xmlstarlet=1.6.1-r0 jq=1.5-r5 dumb-init=1.2.0-r0
 
 COPY --from=builder "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}"
 COPY --from=builder "/var/lib/artemis" "/var/lib/artemis"
@@ -92,6 +92,7 @@ RUN ln -s "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" /opt/apache-artemis
 RUN chown -R artemis.artemis /var/lib/artemis 
 
 RUN mkdir -p /opt/assets
+COPY assets/merge.xslt /opt/assets
 COPY assets/enable-jmx.xml /opt/assets
 
 # Web Server
