@@ -32,12 +32,15 @@
 
 ## 3. About this image
 
-The ActiveMQ Artemis images come in two flavors, both equally supported. :
+The ActiveMQ Artemis images come in two flavors, both equally supported :
 
 - **Debian based**: the default one.
 - **Alpine based**: much lighter.
 
 All versions of ActiveMQ Artemis are provided for the time being but versions previous to 1.5.5 shall be considered deprecated and could be removed at any time.
+
+This image shall not be considered production ready as is. If you plan to use this image in a production environment, fork the image in order to maintain stability as
+the build is [reproducible](https://reproducible-builds.org/) in a best effort basis. Then at each rebase, make sure you tests the changes you are importing.
 
 ## 4. How to use this image
 
@@ -223,7 +226,7 @@ where you could place a `broker-00.xml` file that looks like the following listi
 Please notice the `core` element change along with the versions:
 
 - `1.0.0` up to `1.5.5`: `<core xmlns="urn:activemq:core">`
-- `2.5.0` onwards: `<core xmlns="urn:activemq:core" xsi:schemaLocation="urn:activemq:core ">`
+- `2.0.0` onwards: `<core xmlns="urn:activemq:core" xsi:schemaLocation="urn:activemq:core ">`
 
 **Configuration transformations**
 
