@@ -12,6 +12,10 @@ command:
 port:
   tcp:8161:
     listening: true
+{{if getEnv "ENABLE_JMX_EXPORTER" }}
+  tcp:9404:
+    listening: true
+{{end}}
 
 user:
   artemis:
@@ -108,6 +112,11 @@ file:
       - "-XX:+UnlockExperimentalVMOptions"
       - "-XX:+UseCGroupMemoryLimitForHeap"
       - "-XX:MaxRAMFraction=2"
+{{if getEnv "ENABLE_JMX_EXPORTER" }}
+      - "jmx_prometheus_javaagent.jar=9404"
+{{else}}
+      - "!jmx_prometheus_javaagent.jar"  
+{{end}}      
 {{ if or (getEnv "ARTEMIS_MIN_MEMORY") (getEnv "ARTEMIS_MAX_MEMORY") (getEnv "ENABLE_JMX") }}
   {{if getEnv "ARTEMIS_MIN_MEMORY" }}
       - "-Xms{{ .Env.ARTEMIS_MIN_MEMORY }}"

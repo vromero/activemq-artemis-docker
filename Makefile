@@ -23,6 +23,7 @@ test_%:
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -e ARTEMIS_PERF_JOURNAL=AUTO $(call fullTagNameFromTag,$*) && \
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -e ARTEMIS_PERF_JOURNAL=NEVER $(call fullTagNameFromTag,$*) && \
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -e ENABLE_JMX=true -e JMX_PORT=2222 -e JMX_RMI_PORT=3333 $(call fullTagNameFromTag,$*) && \
+	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -e ENABLE_JMX_EXPORTER=true $(call fullTagNameFromTag,$*) && \
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -e ARTEMIS_MIN_MEMORY=1512M -e ARTEMIS_MAX_MEMORY=3048M $(call fullTagNameFromTag,$*) && \
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars-etc-override.yaml" dgoss run -it --rm -v $$(pwd)/test/$$(echo "$*" | cut -d "." -f 1).x.x/etc-override:/var/lib/artemis/etc-override $(call fullTagNameFromTag,$*) 
 
