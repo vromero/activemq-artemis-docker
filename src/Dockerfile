@@ -7,6 +7,7 @@ FROM openjdk:8 as builder
 LABEL maintainer="Victor Romero <victor.romero@gmail.com>"
 
 ARG ACTIVEMQ_ARTEMIS_VERSION
+ENV JMX_EXPORTER_VERSION=0.3.1
 
 RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
   apt-get -qq -o=Dpkg::Use-Pty=0 install -y --no-install-recommends \
@@ -73,6 +74,14 @@ RUN sed -i "s/-Xm[xs][^ \"]*//g" ../etc/artemis.profile
 # that the performance journal calibration is already completed
 RUN if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq  "(1.5\\.[3-5]|[^1]\\.[0-9]\\.[0-9]+)" ) ; then touch /var/lib/artemis/data/.perf-journal-completed; fi
 
+WORKDIR /opt/jmx-exporter
+RUN wget "https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${JMX_EXPORTER_VERSION}/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar" && \
+  wget "https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${JMX_EXPORTER_VERSION}/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar.sha1" && \
+  echo "$(cat "jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar.sha1")" "jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar" | sha1sum -c - && \
+  rm "jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar.sha1" && \
+  ln -s "/opt/jmx-exporter/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar" "/opt/jmx-exporter/jmx_prometheus_javaagent.jar"
+COPY assets/jmx-exporter-config.yaml /opt/jmx-exporter
+
 ##########################################################
 ## Run Image                                             #
 ##########################################################
@@ -94,6 +103,7 @@ RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
 
 COPY --from=builder "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}"
 COPY --from=builder "/var/lib/artemis" "/var/lib/artemis"
+COPY --from=builder "/opt/jmx-exporter" "/opt/jmx-exporter"
 
 RUN ln -s "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" /opt/apache-artemis && chmod 755 /opt/apache-artemis
 RUN chown -R artemis.artemis /var/lib/artemis
@@ -104,6 +114,9 @@ COPY assets/enable-jmx.xml /opt/assets
 
 # Web Server
 EXPOSE 8161
+
+# JMX Exporter
+EXPOSE 9404
 
 # Port for CORE,MQTT,AMQP,HORNETQ,STOMP,OPENWIRE
 EXPOSE 61616

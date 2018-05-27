@@ -170,7 +170,64 @@ docker run -it --rm \
   vromero/activemq-artemis
 ```
 
-### 5.5 Settings the console's allow origin
+### 5.5 Prometheus metrics
+
+When using this image in a orchestrated environmnet like in Kubernetes. It is often useful to have metrics endpoints compatible
+with prometheus to ease monitoring.
+
+This image can export such metrics in port `9404` thanks to the integration with the Prometheus [JMX exporter](https://github.com/prometheus/jmx_exporter). In order to enable it the environmnet variable `ENABLE_JMX_EXPORTER` should
+be present, it will also inderectly enable JMX as if `ENABLE_JMX` was set.
+
+To see what is exported just: 
+
+```console
+docker run -it --rm \
+  -p9404:9404 \
+  -e ENABLE_JMX_EXPORTER=true \
+  vromero/activemq-artemis
+```
+
+And then in a different terminal run:
+
+```console
+curl http://127.0.0.1:9404
+```
+
+To obtain the following and more:
+
+```
+# HELP artemis_disk_scan_period How often to check for disk space usage, in milliseconds (org.apache.activemq.artemis<broker="0.0.0.0"><>DiskScanPeriod)
+# TYPE artemis_disk_scan_period counter
+artemis_disk_scan_period 5000.0
+# HELP artemis_durable_delivering_count number of durable messages that this queue is currently delivering to its consumers (org.apache.activemq.artemis<broker="0.0.0.0", component=addresses, address="DLQ", subcomponent=queues, routing-type="anycast", queue="DLQ"><>DurableDeliveringCount)
+# TYPE artemis_durable_delivering_count counter
+artemis_durable_delivering_count{queue="DLQ",address="DLQ",} 0.0
+artemis_durable_delivering_count{queue="ExpiryQueue",address="ExpiryQueue",} 0.0
+# HELP artemis_journal_min_files Number of journal files to pre-create (org.apache.activemq.artemis<broker="0.0.0.0"><>JournalMinFiles)
+# TYPE artemis_journal_min_files counter
+artemis_journal_min_files 2.0
+# HELP artemis_message_expiry_thread_priority Priority of the thread used to scan message expiration (org.apache.activemq.artemis<broker="0.0.0.0"><>MessageExpiryThreadPriority)
+# TYPE artemis_message_expiry_thread_priority counter
+artemis_message_expiry_thread_priority 3.0
+# HELP artemis_messages_killed number of messages removed from this queue since it was created due to exceeding the max delivery attempts (org.apache.activemq.artemis<broker="0.0.0.0", component=addresses, address="DLQ", subcomponent=queues, routing-type="anycast", queue="DLQ"><>MessagesKilled)
+# TYPE artemis_messages_killed counter
+artemis_messages_killed{queue="DLQ",address="DLQ",} 0.0
+artemis_messages_killed{queue="ExpiryQueue",address="ExpiryQueue",} 0.0
+# HELP artemis_address_memory_usage_percentage Memory used by all the addresses on broker as a percentage of global maximum limit (org.apache.activemq.artemis<broker="0.0.0.0"><>AddressMemoryUsagePercentage)
+# TYPE artemis_address_memory_usage_percentage counter
+artemis_address_memory_usage_percentage 0.0
+# HELP artemis_journal_sync_non_transactional Whether the journal is synchronized when receiving non-transactional datar (org.apache.activemq.artemis<broker="0.0.0.0"><>JournalSyncNonTransactional)
+# TYPE artemis_journal_sync_non_transactional counter
+artemis_journal_sync_non_transactional 1.0
+# HELP artemis_journal_buffer_size Size of the internal buffer on the journal (org.apache.activemq.artemis<broker="0.0.0.0"><>JournalBufferSize)
+# TYPE artemis_journal_buffer_size counter
+artemis_journal_buffer_size 501760.0
+# HELP artemis_journal_max_io Maximum number of write requests that can be in the AIO queue at any given time (org.apache.activemq.artemis<broker="0.0.0.0"><>JournalMaxIO)
+# TYPE artemis_journal_max_io counter
+artemis_journal_max_io 4096.0
+```
+
+### 5.6 Settings the console's allow origin
 
 ActiveMQ Artemis console uses Jolokia. In the default vanilla non-docker installation Jolokia does set a CORS header to
 allow only localhost. In the docker image this create problems as things are rarely accesed as localhost.
@@ -184,7 +241,7 @@ docker run -it --rm \
   vromero/activemq-artemis
 ```
 
-### 5.6 Using external configuration files
+### 5.7 Using external configuration files
 
 It is possible to mount a whole artemis `etc` directory in this image in the volume `/var/lib/artemis/etc`.
 Be careful as this might be an overkill for many situations where only small tweaks are necessary.  
@@ -193,7 +250,7 @@ When using this technique be aware that the configuration files of Artemis might
 Generally speaking, when in need to configure Artemis beyond what it is offered by this image using environment 
 variables, it is recommended to use the partial override mechanism described in the next section.
 
-### 5.7 Overriding parts of the configuration
+### 5.8 Overriding parts of the configuration
 
 The default ActiveMQ Artemis configuration can be partially modified, instead of completely replaced as in the previous section, using two mechanisms. Merge snippets and XSLT tranformations.
 
@@ -273,7 +330,7 @@ docker run -it --rm \
   cat ../etc/broker.xml
 ```
 
-### 5.8 Mount points
+### 5.9 Mount points
 
 | Mount point                      | Description                                                       |
 |--------------------------------- |-------------------------------------------------------------------|
@@ -282,11 +339,12 @@ docker run -it --rm \
 |`/var/lib/artemis/etc-override`   | Hold the instance configuration files                             |
 
 
-### 5.9 Exposed ports
+### 5.10 Exposed ports
 
 | Port    | Description                                                     |
 |-------- |-----------------------------------------------------------------|
 | `8161`  | Web Server                                                      |
+| `9404`  | JMX Exporter                                                    |
 | `61616` | Core,MQTT,AMQP,HORNETQ,STOMP,Openwire                           |
 | `5445`  | HORNETQ,STOMP                                                   |
 | `5672`  | AMQP                                                            |
