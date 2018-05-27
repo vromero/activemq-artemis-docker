@@ -61,6 +61,10 @@ RUN xmlstarlet ed -L -N amq="http://activemq.org/schema" \
     -u "/amq:broker/amq:web/@bind" \
     -v "http://0.0.0.0:8161" bootstrap.xml
 
+# In a similar fashion the jolokia access is restricted to localhost only. Disabling
+# this as in the natural environmnets for the image like Kubernetes this is problematic.
+RUN if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq  "(2.[^0-3]\\.[0-9]|[^1-2]\\.[0-9]\\.[0-9]+)" ) ; then xmlstarlet ed --inplace --subnode "/restrict" --type elem -n "remote" jolokia-access.xml && xmlstarlet ed --inplace --subnode "/restrict/remote" --type elem -n host -v "0.0.0.0/0" jolokia-access.xml; fi
+
 # Remove default values for memory in artemis profile in order to let the automatic
 # Java ergonomics detection work https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/ergonomics.html
 RUN sed -i "s/-Xm[xs][^ \"]*//g" ../etc/artemis.profile
