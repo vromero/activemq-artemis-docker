@@ -337,7 +337,7 @@ docker run -it --rm \
 |`/var/lib/artemis/data`           | Holds the data files used for storing persistent messages         |
 |`/var/lib/artemis/etc`            | Hold the instance configuration files                             |
 |`/var/lib/artemis/etc-override`   | Hold the instance configuration files                             |
-
+|`/var/lib/artemis/lock`           | Hold the command line locks (typically not useful to mount)       |
 
 ### 5.10 Exposed ports
 
@@ -351,17 +351,41 @@ docker run -it --rm \
 | `1883`  | MQTT                                                            |
 | `61613` | STOMP                                                           |
 
-## 6. License
+## 6. Running in orchestrators
+
+At the moment only docker is directly supported for this image. However there is an attempt to create
+a helm chart for Kubernetes and some configuration tuning for OpenShift.
+
+### 6.1 Running in Kubernetes
+
+There is nothing special about a standard Kubernetes installation that should be mention to run this image.
+
+If you want to actually run a cluster of ActiveMQ Artemis nodes, there is an attempt to create a Helm chart
+by the same author of this image. It can be found [here](https://github.com/vromero/activemq-artemis-helm).
+
+### 6.2 OpenShift
+
+OpenShift has diverted a bit from Kubernetes (e.g: automounts empty volumes in all declared volumes without
+the user asking for it at all) and Docker (e.g: runs on an random user).
+
+The biggest problem to run this image is the automount of empty directories because it empties the `etc` directory.
+In order to restore it the environment variable `RESTORE_CONFIGURATION` has been created. It can be used as follows:
+
+```bash
+oc new-app --name=artemis vromero/activemq-artemis -e RESTORE_CONFIGURATION=true
+```
+
+## 7. License
 
 View [license information](http://www.apache.org/licenses/LICENSE-2.0) for the software contained in this image.
 
-## 7. User Feedback
+## 8. User Feedback
 
-### 7.1 Issues
+### 8.1 Issues
 
 If you have any problems with or questions about this image, please contact us through a [GitHub issue](https://github.com/vromero/activemq-artemis-docker/issues).
 
-### 7.2 Contributing
+### 8.2 Contributing
 
 You are invited to contribute new features, fixes, or updates, large or small; we are always thrilled to receive pull requests, and do our best to process them as fast as we can.
 
