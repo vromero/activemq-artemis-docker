@@ -91,7 +91,7 @@ ARG ACTIVEMQ_ARTEMIS_VERSION
 ENV ACTIVEMQ_ARTEMIS_VERSION=$ACTIVEMQ_ARTEMIS_VERSION
 
 # add user and group for artemis
-RUN groupadd -r artemis && useradd -r -g artemis artemis
+RUN groupadd -g 1000 -r artemis && useradd -r -u 1000 -g artemis artemis
 
 RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
   apt-get -qq -o=Dpkg::Use-Pty=0 install -y --no-install-recommends \
@@ -104,6 +104,9 @@ RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
 COPY --from=builder "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}"
 COPY --from=builder "/var/lib/artemis" "/var/lib/artemis"
 COPY --from=builder "/opt/jmx-exporter" "/opt/jmx-exporter"
+
+# To enable RESTORE_CONFIGURATION
+COPY --from=builder "/var/lib/artemis/etc" "/var/lib/artemis/etc-backup"
 
 RUN ln -s "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" /opt/apache-artemis && chmod 755 /opt/apache-artemis
 RUN chown -R artemis.artemis /var/lib/artemis
@@ -133,15 +136,18 @@ EXPOSE 1883
 #Port for STOMP
 EXPOSE 61613
 
+WORKDIR /var/lib/artemis/bin
+
+USER artemis
+
+RUN mkdir /var/lib/artemis/lock
+
 # Expose some outstanding folders
 VOLUME ["/var/lib/artemis/data"]
 VOLUME ["/var/lib/artemis/tmp"]
 VOLUME ["/var/lib/artemis/etc"]
 VOLUME ["/var/lib/artemis/etc-override"]
-
-WORKDIR /var/lib/artemis/bin
-
-USER artemis
+VOLUME ["/var/lib/artemis/lock"]
 
 COPY assets/docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]

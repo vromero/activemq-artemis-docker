@@ -20,12 +20,14 @@ port:
 user:
   artemis:
     exists: true
+    uid: 1000
     groups:
       - artemis
 
 group:
   artemis:
     exists: true
+    gid: 1000
 
 process:
   java:

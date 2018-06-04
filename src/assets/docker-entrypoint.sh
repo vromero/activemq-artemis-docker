@@ -5,6 +5,14 @@ BROKER_HOME=/var/lib/artemis
 OVERRIDE_PATH=$BROKER_HOME/etc-override
 CONFIG_PATH=$BROKER_HOME/etc
 
+# In case this is running in a non standard system that automounts
+# empty volumes like OpenShift, restore the configuration into the 
+# volume
+if [ "$RESTORE_CONFIGURATION" ] && [ -z "$(ls -A ${CONFIG_PATH})" ]; then
+  cp -R "${CONFIG_PATH}"-backup/* "${CONFIG_PATH}"
+  echo Configuration restored
+fi
+
 # Log to tty to enable docker logs container-name
 sed -i "s/logger.handlers=.*/logger.handlers=CONSOLE/g" ${CONFIG_PATH}/logging.properties
 
