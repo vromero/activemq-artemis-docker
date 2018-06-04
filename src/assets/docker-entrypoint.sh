@@ -16,6 +16,16 @@ fi
 # Log to tty to enable docker logs container-name
 sed -i "s/logger.handlers=.*/logger.handlers=CONSOLE/g" ${CONFIG_PATH}/logging.properties
 
+# Set the broker name to the host name to ease experience in external monitors and in the console
+if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "(1\\.[^0-2]\\.[0-9]+|2\\.[0-9]\\.[0-9]+)" ) ; then 
+  xmlstarlet ed -L \
+    -N activemq="urn:activemq" \
+    -N core="urn:activemq:core" \
+    -u "/activemq:configuration/core:core/core:name" \
+    -v "$(hostname)" ../etc/broker.xml
+fi
+
+
 # Update users and roles with if username and password is passed as argument
 if [ "$ARTEMIS_USERNAME" ] && [ "$ARTEMIS_PASSWORD" ]; then
   # From 1.0.0 up to 1.1.0 the artemis roles file was user=groups

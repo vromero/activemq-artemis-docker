@@ -1,3 +1,5 @@
 
 flags:
   testmerge: false
+
+hostname: testHostName.local
