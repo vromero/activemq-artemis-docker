@@ -63,6 +63,9 @@ does make sense. How to enable JMX is described in section *Enabling JMX*.
 The Jolokia console CORS header won't be a problem by default as it set to `*`, however if you want to 
 narrow it down for improved security don't miss the section *Settings the console's allow origin*.
 
+In rare ocassions you might find the need of running ActiveMQ Artemis without security. This
+is described in section *Disabling security*.
+
 Some of the configurations mentioned above are scripted automations that modify the
 configuration files. You might have your own configuration that you want to provide as a whole.
 In that case disregard the aforementioned sections and find how to pass your own
@@ -242,7 +245,22 @@ docker run -it --rm \
   vromero/activemq-artemis
 ```
 
-### 5.7 Using external configuration files
+### 5.7 Overriding parts of the configuration
+
+ActiveMQ Artemis support disabling the security using the element `<security-enabled>false</security-enabled>`
+as described in the official [documentation](https://activemq.apache.org/artemis/docs/latest/security.html). 
+This docker image makes it simple to set that element using the environment property: `DISABLE_SECURITY`:
+
+```console
+docker run -it --rm \
+  -e DISABLE_SECURITY=true \
+  vromero/activemq-artemis
+```
+
+Please keep in mind no production system, possible no environment at all, should ever disable security.
+Make sure you read the falacy number one of the [falacies of the distributed computing](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing) before disabling the security.
+
+### 5.8 Using external configuration files
 
 It is possible to mount a whole artemis `etc` directory in this image in the volume `/var/lib/artemis/etc`.
 Be careful as this might be an overkill for many situations where only small tweaks are necessary.  
@@ -251,7 +269,7 @@ When using this technique be aware that the configuration files of Artemis might
 Generally speaking, when in need to configure Artemis beyond what it is offered by this image using environment 
 variables, it is recommended to use the partial override mechanism described in the next section.
 
-### 5.8 Overriding parts of the configuration
+### 5.9 Overriding parts of the configuration
 
 The default ActiveMQ Artemis configuration can be partially modified, instead of completely replaced as in the previous section, using two mechanisms. Merge snippets and XSLT tranformations.
 
@@ -331,7 +349,7 @@ docker run -it --rm \
   cat ../etc/broker.xml
 ```
 
-### 5.9 Mount points
+### 5.10 Mount points
 
 | Mount point                      | Description                                                       |
 |--------------------------------- |-------------------------------------------------------------------|
@@ -340,7 +358,7 @@ docker run -it --rm \
 |`/var/lib/artemis/etc-override`   | Hold the instance configuration files                             |
 |`/var/lib/artemis/lock`           | Hold the command line locks (typically not useful to mount)       |
 
-### 5.10 Exposed ports
+### 5.11 Exposed ports
 
 | Port    | Description                                                     |
 |-------- |-----------------------------------------------------------------|

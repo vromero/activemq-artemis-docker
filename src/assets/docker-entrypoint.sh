@@ -13,6 +13,17 @@ if [ "$RESTORE_CONFIGURATION" ] && [ -z "$(ls -A ${CONFIG_PATH})" ]; then
   echo Configuration restored
 fi
 
+# Never use in a production environment
+if [ "$DISABLE_SECURITY" ]; then
+    xmlstarlet ed -L \
+      -N activemq="urn:activemq" \
+      -N core="urn:activemq:core" \
+      --subnode "/activemq:configuration/core:core" \
+      -t elem \
+      -n "security-enabled" \
+      -v "false" ../etc/broker.xml 
+fi
+
 # Log to tty to enable docker logs container-name
 sed -i "s/logger.handlers=.*/logger.handlers=CONSOLE/g" ${CONFIG_PATH}/logging.properties
 
