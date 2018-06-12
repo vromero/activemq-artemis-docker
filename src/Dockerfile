@@ -8,6 +8,7 @@ LABEL maintainer="Victor Romero <victor.romero@gmail.com>"
 
 ARG ACTIVEMQ_ARTEMIS_VERSION
 ENV JMX_EXPORTER_VERSION=0.3.1
+ENV JGROUPS_KUBERNETES_VERSION=0.9.3
 
 RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
   apt-get -qq -o=Dpkg::Use-Pty=0 install -y --no-install-recommends \
@@ -51,10 +52,17 @@ RUN if test "${ACTIVEMQ_ARTEMIS_VERSION}" = "1.0.0" ; \
         --cluster-password simetraehcaparetsulc ; \
     fi 
 
+# Using KUBE_PING 0.9.3. Can't upgrade to 1.x.x as Artemis uses JGroups 3.3.x 
+# https://github.com/jgroups-extras/jgroups-kubernetes/issues/30
+WORKDIR /opt/jgroupskubernetes
+RUN wget -O ivy-2.4.0.jar http://search.maven.org/remotecontent?filepath=org/apache/ivy/ivy/2.4.0/ivy-2.4.0.jar && \
+  java -jar ivy-2.4.0.jar -dependency org.jgroups.kubernetes kubernetes "${JGROUPS_KUBERNETES_VERSION}" -retrieve "[artifact]-[revision](-[classifier]).[ext]" -types jar && \
+  rm ivy-2.4.0.jar
+
 WORKDIR /var/lib/artemis/etc
 
 # --java-options doesn't seem to work across the board on all versions adding them manually
-RUN sed -i "s/JAVA_ARGS=\"/JAVA_ARGS=\"-Djava.net.preferIPv4Addresses=true -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=2 /g" ../etc/artemis.profile
+RUN sed -i "s/JAVA_ARGS=\"/JAVA_ARGS=\"-Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=2 /g" ../etc/artemis.profile
 
 # Ports are only exposed with an explicit argument, there is no need to binding
 # the web console to localhost
@@ -104,6 +112,7 @@ RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
 COPY --from=builder "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}"
 COPY --from=builder "/var/lib/artemis" "/var/lib/artemis"
 COPY --from=builder "/opt/jmx-exporter" "/opt/jmx-exporter"
+COPY --from=builder "/opt/jgroupskubernetes/*" "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}/lib/" 
 
 # To enable RESTORE_CONFIGURATION
 COPY --from=builder "/var/lib/artemis/etc" "/var/lib/artemis/etc-backup"
