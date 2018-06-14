@@ -377,10 +377,16 @@ a helm chart for Kubernetes and some configuration tuning for OpenShift.
 
 ### 6.1 Running in Kubernetes
 
-There is nothing special about a standard Kubernetes installation that should be mention to run this image.
+ActiveMQ Artemis can leverage [JGroups](http://www.jgroups.org/) to discover the members of the cluster. And JGroups
+can be extended with a plugin called [jgroups-kubernetes](https://github.com/jgroups-extras/jgroups-kubernetes)
+that allows JGroups to discover using Kubernetes.
 
-If you want to actually run a cluster of ActiveMQ Artemis nodes, there is an attempt to create a Helm chart
-by the same author of this image. It can be found [here](https://github.com/vromero/activemq-artemis-helm).
+[jgroups-kubernetes](https://github.com/jgroups-extras/jgroups-kubernetes) version `0.9.3` is included in the classpath of
+this image, however everything about the configuration of jgroups and jgroups-kubernetes is left to the user.
+
+If you rather prefer a easier solution to run a cluster of ActiveMQ Artemis nodes, there is an attempt to create a Helm chart
+by the same author of this image. It can be found [here](https://github.com/vromero/activemq-artemis-helm). It
+does leverage `jgroups-kubernetes` in a transparent way.
 
 ### 6.2 OpenShift
 
