@@ -133,7 +133,7 @@ if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq  "(1.5\\.[3-5]|[^1]\\.[0-9]\\.
 fi
 
 if [ "$1" = 'artemis-server' ]; then
-	dumb-init -- sh ./artemis run
+  exec dumb-init -- sh ./artemis run
 fi
 
 exec "$@"
