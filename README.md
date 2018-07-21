@@ -1,4 +1,5 @@
-![latest 2.6.0](https://img.shields.io/badge/latest-2.6.0-blue.svg?style=flat) ![License MIT](https://img.shields.io/badge/license-APACHE-blue.svg) [![Build Status](https://travis-ci.org/vromero/activemq-artemis-docker.svg?branch=master)](https://travis-ci.org/vromero/activemq-artemis-docker) [![](https://img.shields.io/docker/stars/vromero/activemq-artemis.svg)](https://hub.docker.com/r/vromero/activemq-artemis 'DockerHub') [![](https://img.shields.io/docker/pulls/vromero/activemq-artemis.svg)](https://hub.docker.com/r/vromero/activemq-artemis 'DockerHub') [![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/vromero)
+![latest 2.6.0](https://img.shields.io/badge/latest-2.6.0-blue.svg?style=flat) ![License MIT](https://img.shields.io/badge/license-APACHE-blue.svg) [![Build Status](https://travis-ci.org/vromero/activemq-artemis-docker.svg?branch=master)](https://travis-ci.org/vromero/activemq-artemis-docker) [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fvromero%2Factivemq-artemis-docker.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fvromero%2Factivemq-artemis-docker?ref=badge_shield)
+[![](https://img.shields.io/docker/stars/vromero/activemq-artemis.svg)](https://hub.docker.com/r/vromero/activemq-artemis 'DockerHub') [![](https://img.shields.io/docker/pulls/vromero/activemq-artemis.svg)](https://hub.docker.com/r/vromero/activemq-artemis 'DockerHub') [![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/vromero)
 
 ## 1. What is ActiveMQ Artemis?
 
@@ -405,6 +406,9 @@ oc new-app --name=artemis vromero/activemq-artemis -e RESTORE_CONFIGURATION=true
 ## 7. License
 
 View [license information](http://www.apache.org/licenses/LICENSE-2.0) for the software contained in this image.
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fvromero%2Factivemq-artemis-docker.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fvromero%2Factivemq-artemis-docker?ref=badge_large)
 
 ## 8. User Feedback
 
