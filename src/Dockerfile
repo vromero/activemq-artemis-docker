@@ -3,19 +3,22 @@
 ##########################################################
 ## Build Image                                           #
 ##########################################################
-FROM openjdk:8 as builder
+FROM openjdk:8u171-jdk-stretch as builder
 LABEL maintainer="Victor Romero <victor.romero@gmail.com>"
 
 ARG ACTIVEMQ_ARTEMIS_VERSION
 ENV JMX_EXPORTER_VERSION=0.3.1
 ENV JGROUPS_KUBERNETES_VERSION=0.9.3
 
+# See https://github.com/hadolint/hadolint/wiki/DL4006
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
   apt-get -qq -o=Dpkg::Use-Pty=0 install -y --no-install-recommends \
     libaio1=0.3.110-3 \
     xmlstarlet=1.6.1-2 \
     jq=1.5+dfsg-1.3 \
-    ca-certificates=20161130+nmu1 \
+    ca-certificates=20161130+nmu1+deb9u1 \
     wget=1.18-5+deb9u2 && \
   rm -rf /var/lib/apt/lists/*
 
@@ -29,6 +32,9 @@ RUN wget "https://repository.apache.org/content/repositories/releases/org/apache
   tar xfz "apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz" && \
   ln -s "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" "/opt/apache-artemis" && \
   rm -f "apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz" "KEYS" "apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc"
+
+# Make sure pipes are considered to detemine success, see: https://github.com/hadolint/hadolint/wiki/DL4006
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Create broker instance
 # Per recommendation of https://activemq.apache.org/artemis/docs/latest/perf-tuning.html : -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:+UseParallelOldGC 
