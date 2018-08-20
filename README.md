@@ -351,7 +351,20 @@ docker run -it --rm \
   cat ../etc/broker.xml
 ```
 
-### 5.10 Mount points
+### 5.10 Broker Config
+
+ActiveMQ allows you to override key configuration values using [System properties](https://activemq.apache.org/artemis/docs/latest/configuration-index.html#System-properties).
+This docker image has built in support to set these values by passing environment variables prefixed with BROKER_CONFIG to the docker image.  
+
+Below is an example which overrides the global-max-size and disk-scan-period values
+```
+docker run -it --rm   -p 8161:8161 \
+    -e BROKER_CONFIG_GLOBAL_MAX_SIZE=50000 \
+    -e BROKER_CONFIG_DISK_SCAN_PERIOD=6000 \
+    vromero/activemq-artemis
+```
+
+### 5.11 Mount points
 
 | Mount point                      | Description                                                       |
 |--------------------------------- |-------------------------------------------------------------------|
@@ -360,7 +373,7 @@ docker run -it --rm \
 |`/var/lib/artemis/etc-override`   | Hold the instance configuration files                             |
 |`/var/lib/artemis/lock`           | Hold the command line locks (typically not useful to mount)       |
 
-### 5.11 Exposed ports
+### 5.12 Exposed ports
 
 | Port    | Description                                                     |
 |-------- |-----------------------------------------------------------------|

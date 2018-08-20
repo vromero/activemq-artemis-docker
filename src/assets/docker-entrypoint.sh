@@ -132,6 +132,21 @@ if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq  "(1.5\\.[3-5]|[^1]\\.[0-9]\\.
   performanceJournal
 fi
 
+# Add BROKER_CONFIGS env variable to startup options
+sed -i "/BROKER_CONFIGS/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"\$BROKER_CONFIGS /g" $CONFIG_PATH/artemis.profile;
+
+# Loop through all BROKER_CONFIG_... and convert to java system properties
+env|grep -E "^BROKER_CONFIG_"|sed -e 's/BROKER_CONFIG_//g' >/tmp/brokerconfigs.txt
+while read -r config
+do
+  PARAM=${config%%=*}
+  PARAM_CAMEL_CASE=$(echo "$PARAM"|sed -r 's/./\L&/g; s/(^|-|_)(\w)/\U\2/g; s/./\L&/')
+  VALUE=${config#*=}
+  BROKER_CONFIGS="${BROKER_CONFIGS} -Dbrokerconfig.${PARAM_CAMEL_CASE}=${VALUE}"
+done < /tmp/brokerconfigs.txt
+rm -f /tmp/brokerconfigs.txt
+export BROKER_CONFIGS
+
 if [ "$1" = 'artemis-server' ]; then
   exec dumb-init -- sh ./artemis run
 fi

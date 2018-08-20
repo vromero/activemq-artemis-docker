@@ -9,6 +9,17 @@ command:
     timeout: 1000
 {{end}}
 
+command:
+  ps -ef|grep -v grep|grep java:
+    exit-status: 0
+    stdout:
+{{if getEnv "BROKER_CONFIG_GLOBAL_MAX_SIZE" }}
+    - "-Dbrokerconfig.globalMaxSize={{ .Env.BROKER_CONFIG_GLOBAL_MAX_SIZE }}"
+{{end}}
+    stderr: []
+    timeout: 1000
+
+
 port:
   tcp:8161:
     listening: true
@@ -64,8 +75,8 @@ file:
     owner: artemis
     group: artemis
     filetype: file
-{{ if (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "(1\\.[^0-2]\\.[0-9]+|2\\.[0-9]\\.[0-9]+)") }}
     contains:
+{{ if (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "(1\\.[^0-2]\\.[0-9]+|2\\.[0-9]\\.[0-9]+)") }}
       - <name>{{.Vars.hostname}}</name>
   {{if getEnv "DISABLE_SECURITY" }}
       - <security-enabled>false</security-enabled>
@@ -131,7 +142,8 @@ file:
       - "jmx_prometheus_javaagent.jar=9404"
 {{else}}
       - "!jmx_prometheus_javaagent.jar"  
-{{end}}      
+{{end}} 
+      - "$BROKER_CONFIGS"
 {{ if or (getEnv "ARTEMIS_MIN_MEMORY") (getEnv "ARTEMIS_MAX_MEMORY") (getEnv "ENABLE_JMX") }}
   {{if getEnv "ARTEMIS_MIN_MEMORY" }}
       - "-Xms{{ .Env.ARTEMIS_MIN_MEMORY }}"
