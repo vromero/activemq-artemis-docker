@@ -2,7 +2,7 @@
 .PHONY: help build test run all
 
 ALL_VERSIONS=1.1.0 1.2.0 1.3.0 1.4.0 1.5.0 1.5.1 1.5.2 1.5.3 1.5.4 1.5.5 1.5.6 2.0.0 2.1.0 2.2.0 2.3.0 2.4.0 2.5.0 2.6.0 2.6.1 2.6.2
-ALL_VARIANTS=default alpine
+ALL_VARIANTS=default alpine centos
 ALL_VERSION_TAGS=$(foreach remdefault, $(foreach aver, $(ALL_VERSIONS), $(foreach avar, $(ALL_VARIANTS), $(aver)-$(avar) ) ), $(remdefault:-default=) )
 
 getPart=$(word $2,$(subst -, ,$1))
