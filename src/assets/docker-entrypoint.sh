@@ -71,6 +71,86 @@ mergeXmlFiles() {
   mv /tmp/broker-merge.xml "$3"
 }
 
+# Set broker name if required
+if [ "${ACTIVEMQ_ARTEMIS_NAME}" ];then
+  xmlstarlet ed -L \
+    -N activemq="urn:activemq" \
+    -N core="urn:activemq:core" \
+    -u "/activemq:configuration/core:core/core:name" \
+    -v "${ACTIVEMQ_ARTEMIS_NAME}" $CONFIG_PATH/broker.xml  
+fi
+
+if [ "${ENABLE_CLUSTER}" ];then
+  # Delete clustering elements first, otherwise we could end up with duplicates.  
+  for element in connectors broadcast-groups discovery-groups cluster-connections ha-policy
+  do
+    xmlstarlet ed -P -L -N activemq="urn:activemq" -N core="urn:activemq:core" \
+      -d "/activemq:configuration/core:core/core:$element" $CONFIG_PATH/broker.xml
+  done
+  
+  # Enable clustering
+  mergeXmlFiles "$CONFIG_PATH/broker.xml" /opt/assets/enable-cluster.xml "$CONFIG_PATH/broker.xml"
+  
+  # Set cluster user/pass
+  xmlstarlet ed -L -N activemq="urn:activemq" -N core="urn:activemq:core" \
+    -u "/activemq:configuration/core:core/core:cluster-user" \
+    -v "${CLUSTER_USER:-artemisCluster}" $CONFIG_PATH/broker.xml
+  xmlstarlet ed -L -N activemq="urn:activemq" -N core="urn:activemq:core" \
+    -u "/activemq:configuration/core:core/core:cluster-password" \
+    -v "${CLUSTER_PASSWORD:-artemisCluster}" $CONFIG_PATH/broker.xml
+
+  # Set the cluster uri
+   xmlstarlet ed -P -L -N activemq="urn:activemq" -N core="urn:activemq:core" \
+     -u "/activemq:configuration/core:core/core:connectors/core:connector" \
+     -v "${CLUSTER_URI:-tcp://localhost:61616}" $CONFIG_PATH/broker.xml  
+
+  # set the cluster-name
+   xmlstarlet ed -P -L -N activemq="urn:activemq" -N core="urn:activemq:core" \
+     -u "/activemq:configuration/core:core/core:cluster-connections/core:cluster-connection/@name" \
+     -v "${CLUSTER_NAME:-mycluster}" $CONFIG_PATH/broker.xml
+  
+  # Configure ha-replication/master if required
+  if [ "${HA_ROLE}" = "master" ];then
+    mergeXmlFiles "$CONFIG_PATH/broker.xml" /opt/assets/enable-cluster-hamaster.xml "$CONFIG_PATH/broker.xml"
+    if [ "${HA_GROUP_NAME}" ];then
+      xmlstarlet ed -L -N activemq="urn:activemq" -N core="urn:activemq:core" \
+        --subnode "/activemq:configuration/core:core/core:ha-policy/core:replication/core:master" \
+        -t elem -n "group-name" -v "${HA_GROUP_NAME}" $CONFIG_PATH/broker.xml
+    fi
+  fi
+  
+  # Configure ha-replication/slave if required
+  if [ "${HA_ROLE}" = "slave" ];then
+    mergeXmlFiles "$CONFIG_PATH/broker.xml" /opt/assets/enable-cluster-haslave.xml "$CONFIG_PATH/broker.xml"
+    if [ "${HA_GROUP_NAME}" ];then
+      xmlstarlet ed -L -N activemq="urn:activemq" -N core="urn:activemq:core" \
+        --subnode "/activemq:configuration/core:core/core:ha-policy/core:replication/core:slave" \
+        -t elem -n "group-name" -v "${HA_GROUP_NAME}" $CONFIG_PATH/broker.xml
+    fi
+  fi  
+
+  if [ "${CLUSTER_CONNECTIONS}" ];then
+    for connector in ${CLUSTER_CONNECTIONS}
+    do
+      # do not add cluster connection for local broker
+      if [ "${connector}" = "${CLUSTER_URI}" ];then
+       continue
+      fi
+      count=$((count+1))
+      SERVICE=$(echo "$connector"|sed -e 's/.*\/\(.*\):.*/\1/g')
+      CONNECTOR_NAME="artemis-${count}-${SERVICE}"
+      xmlstarlet ed -L -N activemq=urn:activemq -N core=urn:activemq:core -s /activemq:configuration/core:core/core:connectors \
+       -t elem -n connector -v "${connector}\${brokerConfig.connectorArgs}" -i \$prev -t attr -n name -v "${CONNECTOR_NAME}" "$CONFIG_PATH/broker.xml"
+
+      xmlstarlet ed -L -N activemq=urn:activemq -N core=urn:activemq:core -s \
+       /activemq:configuration/core:core/core:cluster-connections/core:cluster-connection/core:static-connectors \
+       -t elem -n connector-ref -v "${CONNECTOR_NAME}" "$CONFIG_PATH/broker.xml"
+    done
+  fi
+fi
+# End clustering config
+
+
 files=$(find $OVERRIDE_PATH -name "broker*" -type f | cut -d. -f1 | sort -u );
 if [ ${#files[@]} ]; then
   for f in $files; do

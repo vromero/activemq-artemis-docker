@@ -24,7 +24,9 @@ build_%:
 test_%: 
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local $(call fullTagNameFromTag,$*) && \
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e ARTEMIS_USERNAME=myusername -e ARTEMIS_PASSWORD=mypassword $(call fullTagNameFromTag,$*) && \
-	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e ARTEMIS_PERF_JOURNAL=AUTO $(call fullTagNameFromTag,$*) && \
+	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e ARTEMIS_PERF_JOURNAL=AUTO -e ENABLE_CLUSTER=true \
+	-e CLUSTER_NAME=supercluster -e HA_ROLE=master -e HA_GROUP_NAME=myclsgrp -e CLUSTER_USER=cluser -e CLUSTER_PASSWORD=clpass \
+	-e CLUSTER_URI=tcp://127.0.0.1:61616 -e CLUSTER_CONNECTIONS="tcp://localhost:61616" $(call fullTagNameFromTag,$*) && \
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e ARTEMIS_PERF_JOURNAL=NEVER $(call fullTagNameFromTag,$*) && \
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e ENABLE_JMX=true -e JMX_PORT=2222 -e JMX_RMI_PORT=3333 -e BROKER_CONFIG_GLOBAL_MAX_SIZE=9500 $(call fullTagNameFromTag,$*) && \
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e ENABLE_JMX_EXPORTER=true $(call fullTagNameFromTag,$*) && \
