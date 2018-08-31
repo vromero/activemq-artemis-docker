@@ -31,7 +31,11 @@ test_%:
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e ARTEMIS_MIN_MEMORY=1512M -e ARTEMIS_MAX_MEMORY=3048M $(call fullTagNameFromTag,$*) && \
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e DISABLE_SECURITY=true $(call fullTagNameFromTag,$*) && \
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars-etc-override.yaml" dgoss run -it --rm -h testHostName.local -v $$(pwd)/test/$$(echo "$*" | cut -d "." -f 1).x.x/etc-override:/var/lib/artemis/etc-override $(call fullTagNameFromTag,$*)  && \
-	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -v "$(TMP_DIR):/var/lib/artemis/etc" -e RESTORE_CONFIGURATION=true $(call fullTagNameFromTag,$*) && rm -Rf tmp
+	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -v "$(TMP_DIR):/var/lib/artemis/etc" -e RESTORE_CONFIGURATION=true $(call fullTagNameFromTag,$*) && \
+	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e JAVA_ARGS_EXTRAS="-Dmyextraarg=myvalue" \
+		-e HAWTIO_ROLE=myhawtrole -e HAWTIO_REALM=myhawtrealm \
+		-e ARTEMIS_JAAS_DOMAIN=newjass -e LDAP_ENABLED=true -e LDAP_CONNECTION_URL=ldap://localhost:389 $(call fullTagNameFromTag,$*) && \
+  rm -Rf tmp
 
 testdockerfile_%: 
 	cd src && \

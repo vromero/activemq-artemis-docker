@@ -9,6 +9,57 @@ command:
     timeout: 1000
 {{end}}
 
+command:
+  ps -ef|grep -v grep|grep java:
+    exit-status: 0
+    stdout:
+{{if getEnv "JAVA_ARGS_EXTRAS" }}
+    - "-Dmyextraarg=myvalue"
+{{end}}
+{{if not (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "^(1\\.[0-9]\\.\\d+|2\\.[0-2]\\.\\d+)") }}
+  {{if getEnv "HAWTIO_ROLE" }}
+    - "-Dhawtio.role={{ .Env.HAWTIO_ROLE }}"
+  {{else}}
+    - "-Dhawtio.role=amq"
+  {{end}}
+  {{if getEnv "HAWTIO_REALM" }}
+    - "-Dhawtio.realm={{ .Env.HAWTIO_REALM }}"
+  {{else}}
+    - "-Dhawtio.realm=activemq"
+  {{end}}
+{{end}}
+    stderr: []
+    timeout: 1000
+
+/var/lib/artemis/etc/bootstrap.xml:
+  exists: true
+  owner: artemis
+  group: artemis
+  filetype: file
+  contains:
+{{if not (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "^(1\\.[0-9]\\.\\d+|2\\.[0-2]\\.\\d+)") }}
+  {{ if (getEnv "ARTEMIS_JAAS_DOMAIN") }}
+    - "domain=\"{{ .Env.ARTEMIS_JAAS_DOMAIN }}\""
+  {{ else }}
+    - "domain=\"activemq\""
+  {{ end }}
+{{ end }}
+
+{{if not (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "^(1\\.[0-9]\\.\\d+|2\\.[0-2]\\.\\d+)") }}
+/var/lib/artemis/etc/login.config:
+  exists: true
+  owner: artemis
+  group: artemis
+  filetype: file
+  contains:
+  {{ if (getEnv "LDAP_ENABLED") }}
+    - "org.apache.activemq.artemis.spi.core.security.jaas.LDAPLoginModule"
+  {{ end }}
+  {{ if (getEnv "LDAP_CONNECTION_URL") }}
+    - "connectionURL=\"{{ .Env.LDAP_CONNECTION_URL }}\""
+  {{ end }}
+{{ end }}
+
 port:
   tcp:8161:
     listening: true
