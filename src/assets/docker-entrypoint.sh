@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+if [ "$ARTEMIS_ENTRYPOINT_DEBUG" ];then
+  set -x
+fi
+
 BROKER_HOME=/var/lib/artemis
 OVERRIDE_PATH=$BROKER_HOME/etc-override
 CONFIG_PATH=$BROKER_HOME/etc
@@ -64,6 +68,41 @@ fi
 # Update max memory if the argument is passed
 if [ "$ARTEMIS_MAX_MEMORY" ]; then
   sed -i "s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Xmx$ARTEMIS_MAX_MEMORY /g" $CONFIG_PATH/artemis.profile
+fi
+
+# Allow hawtio realm and role to be overriden via environment
+sed -i "s/-Dhawtio.role=\([^ \$]\+\)/-Dhawtio.role=\${HAWTIO_ROLE:-\1}/g" $CONFIG_PATH/artemis.profile
+sed -i "s/-Dhawtio.realm=\([^ \$]\+\)/-Dhawtio.realm=\${HAWTIO_REALM:-\1}/g" $CONFIG_PATH/artemis.profile
+
+# Allow us to pass arbitray extra vars to the command line via JAVA_ARGS_EXTRAS env
+if ! grep '^JAVA_ARGS=.*JAVA_ARGS_EXTRAS' $CONFIG_PATH/artemis.profile >/dev/null;then
+  sed -i "s/^JAVA_ARGS=\"/JAVA_ARGS=\"\$JAVA_ARGS_EXTRAS /g" $CONFIG_PATH/artemis.profile;
+fi
+
+# allow us to override the broker jaas-security domain
+if [ "$ARTEMIS_JAAS_DOMAIN" ];then
+  xmlstarlet ed -L -P -N activemq="http://activemq.org/schema" -u "/activemq:broker/activemq:jaas-security/@domain" \
+  -v "$ARTEMIS_JAAS_DOMAIN" $CONFIG_PATH/bootstrap.xml
+fi
+
+# add ldap domain to login.config if required
+if [ "$LDAP_ENABLED" ];then
+  # set default values
+  export LDAP_REQUIRED=${LDAP_REQUIRED:-required}
+  export LDAP_DEBUG=${LDAP_DEBUG:-false}
+  export LDAP_USER_SEARCH_SUBTREE=${LDAP_USER_SEARCH_SUBTREE:-true}
+  export LDAP_ROLE_SEARCH_SUBTREE=${LDAP_ROLE_SEARCH_SUBTREE:-true}
+  if [ -f $CONFIG_PATH/login.config ];then
+    # delete the activemqldap entry - https://stackoverflow.com/questions/37680636/sed-multiline-delete-with-pattern
+    sed -i '/activemqldap {/{:a;N;/};/!ba};//d' $CONFIG_PATH/login.config
+    # add it back with refreshed vars
+    envsubst < /opt/assets/login-ldap.config >> $CONFIG_PATH/login.config
+  fi
+fi
+
+# change default admin role if required
+if [ "${ARTEMIS_ADMIN_ROLES}" ];then
+  sed -i "s/roles=\"amq\"/roles=\"${ARTEMIS_ADMIN_ROLES}\"/g" $CONFIG_PATH/broker.xml $CONFIG_PATH/management.xml
 fi
 
 mergeXmlFiles() {

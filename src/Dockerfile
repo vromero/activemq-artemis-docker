@@ -112,7 +112,7 @@ RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
     libaio1=0.3.110-3 \
     xmlstarlet=1.6.1-2 \
     jq=1.5+dfsg-1.3 \
-    dumb-init=1.2.0-1 && \
+    dumb-init=1.2.0-1 gettext-base=0.19.8.1-2 && \
   rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}"
@@ -127,8 +127,9 @@ RUN ln -s "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" /opt/apache-artemis 
 RUN chown -R artemis.artemis /var/lib/artemis
 
 RUN mkdir -p /opt/assets
-COPY assets/merge.xslt /opt/assets
-COPY assets/enable-jmx.xml /opt/assets
+COPY assets/*.xslt /opt/assets/
+COPY assets/*.xml /opt/assets/
+COPY assets/*.config /opt/assets/
 
 # Web Server
 EXPOSE 8161
