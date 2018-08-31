@@ -16,9 +16,23 @@ command:
 {{if getEnv "BROKER_CONFIG_GLOBAL_MAX_SIZE" }}
     - "-Dbrokerconfig.globalMaxSize={{ .Env.BROKER_CONFIG_GLOBAL_MAX_SIZE }}"
 {{end}}
+{{if getEnv "JAVA_ARGS_EXTRAS" }}
+    - "-Dmyextraarg=myvalue"
+{{end}}
+{{if not (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "^(1\\.[0-9]\\.\\d+|2\\.[0-2]\\.\\d+)") }}
+  {{if getEnv "HAWTIO_ROLE" }}
+    - "-Dhawtio.role={{ .Env.HAWTIO_ROLE }}"
+  {{else}}
+    - "-Dhawtio.role=amq"
+  {{end}}
+  {{if getEnv "HAWTIO_REALM" }}
+    - "-Dhawtio.realm={{ .Env.HAWTIO_REALM }}"
+  {{else}}
+    - "-Dhawtio.realm=activemq"
+  {{end}}
+{{end}}
     stderr: []
     timeout: 1000
-
 
 port:
   tcp:8161:
@@ -76,7 +90,30 @@ file:
     group: artemis
     filetype: file
     contains:
-      - brokerConfig.acceptorArtemisArgs
+      - brokerconfig.acceptorArtemisArgs
+{{ if (getEnv "ENABLE_CLUSTER") }}
+      - "cluster-connections"
+{{ end }}
+{{ if (getEnv "CLUSTER_NAME") }}
+      - "cluster-connection name=\"{{ .Env.CLUSTER_NAME }}\""
+{{ end }}
+{{ if (getEnv "CLUSTER_USER") }}
+      - "<cluster-user>{{ .Env.CLUSTER_USER }}</cluster-user>"
+      - "<cluster-password>{{ .Env.CLUSTER_PASSWORD }}</cluster-password>"
+{{ end }}
+{{ if (getEnv "HA_ROLE") }}
+      - "<ha-policy>"
+{{ end }}
+{{ if (getEnv "HA_GROUP_NAME") }}
+      - "<group-name>{{ .Env.HA_GROUP_NAME }}</group-name>"
+{{ end }}
+{{ if (getEnv "CLUSTER_URI") }}
+      - "<connector name=\"artemis\">{{ .Env.CLUSTER_URI }}</connector>"
+{{ end }}
+{{ if (getEnv "CLUSTER_CONNECTIONS") }}
+      - "<connector-ref>artemis-1-localhost</connector-ref></static-connectors>"
+      - "<connector name=\"artemis-1-localhost\">tcp://localhost:61616${brokerconfig.connectorArgs}</connector>"
+{{ end }}
 {{ if (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "(1\\.[^0-2]\\.[0-9]+|2\\.[0-9]\\.[0-9]+)") }}
       - <name>{{.Vars.hostname}}</name>
   {{if getEnv "DISABLE_SECURITY" }}
@@ -168,3 +205,33 @@ file:
       - "-Dcom.sun.management.jmxremote.authenticate=false"
   {{end}}
 {{end}}
+
+  /var/lib/artemis/etc/bootstrap.xml:
+    exists: true
+    owner: artemis
+    group: artemis
+    filetype: file
+    contains:
+{{if not (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "^(1\\.[0-9]\\.\\d+|2\\.[0-2]\\.\\d+)") }}
+  {{ if (getEnv "ARTEMIS_JAAS_DOMAIN") }}
+      - "domain=\"{{ .Env.ARTEMIS_JAAS_DOMAIN }}\""
+  {{ else }}
+      - "domain=\"activemq\""
+  {{ end }}
+{{ end }}
+
+{{if not (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "^(1\\.[0-9]\\.\\d+|2\\.[0-2]\\.\\d+)") }}
+  /var/lib/artemis/etc/login.config:
+    exists: true
+    owner: artemis
+    group: artemis
+    filetype: file
+    contains:
+  {{ if (getEnv "LDAP_ENABLED") }}
+      - "org.apache.activemq.artemis.spi.core.security.jaas.LDAPLoginModule"
+  {{ end }}
+  {{ if (getEnv "LDAP_CONNECTION_URL") }}
+      - "connectionURL=\"{{ .Env.LDAP_CONNECTION_URL }}\""
+  {{ end }}
+{{ end }}
+

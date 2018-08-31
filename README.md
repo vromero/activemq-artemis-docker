@@ -118,6 +118,18 @@ docker run -it --rm \
   vromero/activemq-artemis
 ```
 
+#### 5.1.1 using ldap
+
+If you with to use ldap instead of the built in store, the following is a sample that will enable artemis and hawtio to use ldap credentials with active directory.  You must create a role with the name amqadmins in AD first
+
+```console
+docker run -e LDAP_ENABLED=true -e LDAP_CONNECTION_URL=ldap://hostname:389 -e LDAP_CONNECTION_USERNAME=user -e LDAP_CONNECTION_PASSWORD=Password123 \
+  -e LDAP_USER_BASE=OU=org,DC=my,DC=local -e LDAP_USER_SEARCH_MATCHING="(SAMAccountName={0})" \
+  -e LDAP_ROLE_BASE=OU=org,DC=my,DC=local -e LDAP_ROLE_NAME=samaccountname -e LDAP_ROLE_SEARCH_MATCHING="(member={0})" \
+  -e ARTEMIS_ADMIN_ROLES="amqadmins" -e HAWTIO_REALM=activemqldap -e HAWTIO_ROLE=amqadmins -e ARTEMIS_JAAS_DOMAIN=activemqldap \
+   -it -p 8161:8161 -p 61616:61616 --rm vromero/activemq-artemis
+```
+
 ### 5.2 Setting the memory values
 
 By default this image does leverage the new features that came in Java 8u131 related to memory ergonomics in containerized environments, more information about it [here](https://developers.redhat.com/blog/2017/03/14/java-inside-docker/). 
@@ -364,7 +376,99 @@ docker run -it --rm   -p 8161:8161 \
     vromero/activemq-artemis
 ```
 
-### 5.11 Mount points
+### 5.11 Environment Variables
+
+Environment variable reference
+
+| Variable Name                    | Default  | Description                                                         |
+|--------------------------------- | -------- | --------------------------------------------------------------------|
+| ACTIVEMQ_ARTEMIS_NAME            |          | Sets the name of the broker                                         |
+| ENABLE_CLUSTER                   |          | Enable clustering                                                   |
+| CLUSTER_URI                      |          | URI that is exposed to cluster members                              |
+| CLUSTER_CONNECTIONS              |          | space separated list of cluster connections (ie. tcp://node1:61616) |
+| HA_ROLE                          |          | set to `master` or `slave` to enable replication                    |
+| HA_GROUP_NAME                    |          | provide a unique name for the master/slave pair                     |
+| JAVA_ARGS_EXTRA                  |          | args that will be passed to the java process on startup             |
+| HAWTIO_ROLE                      |          | sets the name of the admin role to login to hawtio                  |
+| HAWTIO_REALM                     |          | sets the name of the jaas realm to use for hawtio                   |
+| ARTEMIS_JAAS_DOMAIN              |          | sets the name of the jaas realm to use for artemis                  |
+| ARTEMIS_ADMIN_ROLES              |          | override the default amq admin role                                 |
+| LDAP_ENABLE                      |          | enable ldap configuration in the login.config                       |
+| LDAP_REQUIRED                    | required | required, sufficient, optional                                      |
+| LDAP_CONNECTION_URL              |          | ldap connection uri                                                 |
+| LDAP_CONNECTION_USERNAME         |          | user to connect to ldap server with                                 |
+| LDAP_CONNECTION_PASSWORD         |          | password of ldap user                                               |
+| LDAP_USER_SEARCH_MATCHING        |          | ie `(SAMAccountName={0})`                                           |
+| LDAP_USER_SEARCH_SUBTREE         | true     | search ldap subtree                                                 |
+| LDAP_ROLE_BASE                   |          | dn to start role search from                                        |
+| LDAP_ROLE_NAME                   |          | attribute to use for role name ie SAMAccountName                    |
+| LDAP_ROLE_SEARCH_MATCHING        |          | ie `(member={0})`                                                   |
+| LDAP_ROLE_SEARCH_SUBTREE         | true     | search subtree when searching for roles                             |
+
+### 5.12 Clustering
+
+A static cluster is currently supported via environment variables, should you need a more complex configuration
+you can continue to use your own custom etc-overrides.   The reason static clustering is the default cluster
+implementation is that tcp multicast does not appear to work in multi node docker configurations.
+
+Example docker compose file for a 2 node symetric replicated cluster
+```
+version: '3'
+
+# Note, you can define "CLUSTER_CONNECTIONS" env var in .env file as follows instead of listing it within each service:
+#   CLUSTER_CONNECTIONS=tcp://amq01-master:61616 tcp://amq01-slave:61616 tcp://amq02-master:61616 tcp://amq02-slave:61616
+services:
+  amq01-master:
+    image: "vromero/activemq-artemis"
+    ports:
+     - "8161:8161"
+     - "61616:61616"
+    environment:
+     - ACTIVEMQ_ARTEMIS_NAME=amq01-master
+     - ENABLE_CLUSTER=true
+     - CLUSTER_URI=tcp://amq01-master:61616
+     - CLUSTER_CONNECTIONS=tcp://amq01-slave:61616 tcp://amq02-master:61616 tcp://amq02-slave:61616
+     - HA_ROLE=master
+     - HA_GROUP_NAME=amq01
+  amq01-slave:
+    image: "vromero/activemq-artemis"
+    ports:
+     - "8162:8161"
+     - "61626:61616"
+    environment:
+     - ACTIVEMQ_ARTEMIS_NAME=amq01-slave
+     - ENABLE_CLUSTER=true
+     - CLUSTER_URI=tcp://amq01-slave:61616
+     - CLUSTER_CONNECTIONS=tcp://amq01-master:61616 tcp://amq02-master:61616 tcp://amq02-slave:61616
+     - HA_ROLE=slave
+     - HA_GROUP_NAME=amq01
+  amq02-master:
+    image: "vromero/activemq-artemis"
+    ports:
+     - "8163:8161"
+     - "61636:61616"
+    environment:
+     - ACTIVEMQ_ARTEMIS_NAME=amq02-master
+     - ENABLE_CLUSTER=true
+     - CLUSTER_URI=tcp://amq02-master:61616
+     - CLUSTER_CONNECTIONS=tcp://amq02-slave:61616 tcp://amq01-master:61616 tcp://amq01-slave:61616
+     - HA_ROLE=master
+     - HA_GROUP_NAME=amq02
+  amq02-slave:
+    image: "vromero/activemq-artemis"
+    ports:
+     - "8164:8161"
+     - "61646:61616"
+    environment:
+     - ACTIVEMQ_ARTEMIS_NAME=amq02-slave
+     - ENABLE_CLUSTER=true
+     - CLUSTER_URI=tcp://amq02-slave:61616
+     - CLUSTER_CONNECTIONS=tcp://amq02-master:61616 tcp://amq01-master:61616 tcp://amq01-slave:61616
+     - HA_ROLE=slave
+     - HA_GROUP_NAME=amq02
+```
+
+### 5.13 Mount points
 
 | Mount point                      | Description                                                       |
 |--------------------------------- |-------------------------------------------------------------------|
@@ -373,7 +477,7 @@ docker run -it --rm   -p 8161:8161 \
 |`/var/lib/artemis/etc-override`   | Hold the instance configuration files                             |
 |`/var/lib/artemis/lock`           | Hold the command line locks (typically not useful to mount)       |
 
-### 5.12 Exposed ports
+### 5.11 Exposed ports
 
 | Port    | Description                                                     |
 |-------- |-----------------------------------------------------------------|

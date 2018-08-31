@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+<configuration xmlns="urn:activemq" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:activemq /schema/artemis-configuration.xsd">
+
+  <core xmlns="urn:activemq:core" xsi:schemaLocation="urn:activemq:core ">
+    
+    <!-- Cluster connectors -->
+    <connectors>
+      <!-- Connector used to be announced through cluster connections and notifications -->
+      <connector name="artemis">tcp://localhost:61616</connector>
+    </connectors>
+
+    <cluster-user>artemisCluster</cluster-user>
+    <cluster-password>artemisCluster</cluster-password>    
+
+    <cluster-connections>
+      <cluster-connection name="my-cluster">
+         <address></address>
+         <connector-ref>artemis</connector-ref>
+         <retry-interval>500</retry-interval>
+         <retry-interval-multiplier>1.1</retry-interval-multiplier>
+         <max-retry-interval>5000</max-retry-interval>
+         <initial-connect-attempts>-1</initial-connect-attempts>
+         <reconnect-attempts>-1</reconnect-attempts>
+         <message-load-balancing>ON_DEMAND</message-load-balancing>
+         <max-hops>1</max-hops>
+         <static-connectors>
+         </static-connectors>
+      </cluster-connection>
+    </cluster-connections>
+
+  </core>
+
+</configuration>
