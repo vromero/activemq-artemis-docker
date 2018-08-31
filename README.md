@@ -351,7 +351,96 @@ docker run -it --rm \
   cat ../etc/broker.xml
 ```
 
-### 5.10 Mount points
+### 5.10 Broker Config
+
+ActiveMQ allows you to override key configuration values using [System properties](https://activemq.apache.org/artemis/docs/latest/configuration-index.html#System%20properties).
+This docker image has built in support to set these values by passing environment variables prefixed with BROKER_CONFIG to the docker image.  
+
+Below is an example which overrides the global-max-size and disk-scan-period values
+```
+docker run -it --rm   -p 8161:8161 \
+    -e BROKER_CONFIG_GLOBAL_MAX_SIZE=50000 \
+    -e BROKER_CONFIG_DISK_SCAN_PERIOD=6000 \
+    vromero/activemq-artemis
+```
+
+### 5.11 Environment Variables
+
+Environment variable reference
+
+| Variable Name                    | Description                                                         |
+|--------------------------------- |---------------------------------------------------------------------|
+| ACTIVEMQ_ARTEMIS_NAME            | Sets the name of the broker                                         |
+| ENABLE_CLUSTER                   | Enable clustering                                                   |
+| CLUSTER_URI                      | URI that is exposed to cluster members                              |
+| CLUSTER_CONNECTIONS              | space separated list of cluster connections (ie. tcp://node1:61616) |
+| HA_ROLE                          | set to `master` or `slave` to enable replication                    |
+| HA_GROUP_NAME                    | provide a unique name for the master/slave pair                     |
+
+### 5.12 Clustering
+
+A static cluster is currently supported via environment variables, should you need a more complex configuration
+you can continue to use your own custom etc-overrides.   The reason static clustering is the default cluster
+implementation is that tcp multicast does not appear to work in multi node docker configurations.
+
+Example docker compose file for a 2 node symetric replicated cluster
+```
+version: '3'
+
+# Note, you can define "CLUSTER_CONNECTIONS" env var in .env file as follows instead of listing it within each service:
+#   CLUSTER_CONNECTIONS=tcp://amq01-master:61616 tcp://amq01-slave:61616 tcp://amq02-master:61616 tcp://amq02-slave:61616
+services:
+  amq01-master:
+    image: "vromero/activemq-artemis"
+    ports:
+     - "8161:8161"
+     - "61616:61616"
+    environment:
+     - ACTIVEMQ_ARTEMIS_NAME=amq01-master
+     - ENABLE_CLUSTER=true
+     - CLUSTER_URI=tcp://amq01-master:61616
+     - CLUSTER_CONNECTIONS=tcp://amq01-slave:61616 tcp://amq02-master:61616 tcp://amq02-slave:61616
+     - HA_ROLE=master
+     - HA_GROUP_NAME=amq01
+  amq01-slave:
+    image: "vromero/activemq-artemis"
+    ports:
+     - "8162:8161"
+     - "61626:61616"
+    environment:
+     - ACTIVEMQ_ARTEMIS_NAME=amq01-slave
+     - ENABLE_CLUSTER=true
+     - CLUSTER_URI=tcp://amq01-slave:61616
+     - CLUSTER_CONNECTIONS=tcp://amq01-master:61616 tcp://amq02-master:61616 tcp://amq02-slave:61616
+     - HA_ROLE=slave
+     - HA_GROUP_NAME=amq01
+  amq02-master:
+    image: "vromero/activemq-artemis"
+    ports:
+     - "8163:8161"
+     - "61636:61616"
+    environment:
+     - ACTIVEMQ_ARTEMIS_NAME=amq02-master
+     - ENABLE_CLUSTER=true
+     - CLUSTER_URI=tcp://amq02-master:61616
+     - CLUSTER_CONNECTIONS=tcp://amq02-slave:61616 tcp://amq01-master:61616 tcp://amq01-slave:61616
+     - HA_ROLE=master
+     - HA_GROUP_NAME=amq02
+  amq02-slave:
+    image: "vromero/activemq-artemis"
+    ports:
+     - "8164:8161"
+     - "61646:61616"
+    environment:
+     - ACTIVEMQ_ARTEMIS_NAME=amq02-slave
+     - ENABLE_CLUSTER=true
+     - CLUSTER_URI=tcp://amq02-slave:61616
+     - CLUSTER_CONNECTIONS=tcp://amq02-master:61616 tcp://amq01-master:61616 tcp://amq01-slave:61616
+     - HA_ROLE=slave
+     - HA_GROUP_NAME=amq02
+```
+
+### 5.13 Mount points
 
 | Mount point                      | Description                                                       |
 |--------------------------------- |-------------------------------------------------------------------|
@@ -360,7 +449,7 @@ docker run -it --rm \
 |`/var/lib/artemis/etc-override`   | Hold the instance configuration files                             |
 |`/var/lib/artemis/lock`           | Hold the command line locks (typically not useful to mount)       |
 
-### 5.11 Exposed ports
+### 5.14 Exposed ports
 
 | Port    | Description                                                     |
 |-------- |-----------------------------------------------------------------|
