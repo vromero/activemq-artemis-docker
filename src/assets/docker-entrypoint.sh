@@ -66,6 +66,9 @@ if [ "$ARTEMIS_MAX_MEMORY" ]; then
   sed -i "s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Xmx$ARTEMIS_MAX_MEMORY /g" $CONFIG_PATH/artemis.profile
 fi
 
+# Support extra java opts from JAVA_OPTS env
+sed -i "/JAVA_OPTS/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"\$JAVA_OPTS /g" $CONFIG_PATH/artemis.profile;
+
 mergeXmlFiles() {
   xmlstarlet tr /opt/assets/merge.xslt -s replace=true -s with="$2" "$1" > /tmp/broker-merge.xml
   mv /tmp/broker-merge.xml "$3"

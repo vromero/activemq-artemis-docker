@@ -16,6 +16,9 @@ command:
 {{if getEnv "BROKER_CONFIG_GLOBAL_MAX_SIZE" }}
     - "-Dbrokerconfig.globalMaxSize={{ .Env.BROKER_CONFIG_GLOBAL_MAX_SIZE }}"
 {{end}}
+{{if getEnv "JAVA_OPTS" }}
+    - {{ .Env.JAVA_OPTS }}
+{{end}}
     stderr: []
     timeout: 1000
 
