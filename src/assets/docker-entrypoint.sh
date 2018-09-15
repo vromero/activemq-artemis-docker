@@ -4,6 +4,7 @@ set -e
 BROKER_HOME=/var/lib/artemis
 OVERRIDE_PATH=$BROKER_HOME/etc-override
 CONFIG_PATH=$BROKER_HOME/etc
+export BROKER_HOME OVERRIDE_PATH CONFIG_PATH
 
 # In case this is running in a non standard system that automounts
 # empty volumes like OpenShift, restore the configuration into the 
@@ -149,6 +150,14 @@ do
 done < /tmp/brokerconfigs.txt
 rm -f /tmp/brokerconfigs.txt
 export BROKER_CONFIGS
+
+files=$(find $OVERRIDE_PATH -name "entrypoint*.sh" -type f | sort -u );
+if [ ${#files[@]} ]; then
+  for f in $files; do
+    echo "Processing entrypoint override: $f"
+    /bin/sh "$f"
+  done
+fi
 
 if [ "$1" = 'artemis-server' ]; then
   exec dumb-init -- sh ./artemis run
