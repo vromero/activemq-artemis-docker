@@ -167,3 +167,10 @@ file:
       - "-Dcom.sun.management.jmxremote.authenticate=false"
   {{end}}
 {{end}}
+
+{{if (.Vars.flags.testmerge) }}
+  /var/lib/artemis/etc/created_by_entrypoint-00:
+    exists: true
+    owner: artemis
+    group: artemis
+{{end}}
