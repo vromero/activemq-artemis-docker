@@ -372,7 +372,15 @@ docker run -it --rm   -p 8161:8161 \
     vromero/activemq-artemis
 ```
 
-### 5.11 Mount points
+### 5.11 Environment Variables
+
+Additionally, the following environment variables are supported
+
+| Env Var         | Default          | Description                                                       |
+|---------------- |----------------- |-------------------------------------------------------------------|
+|JAVA_OPTS        |                  |Will pass additional java options to the artemis runtime           |
+
+### 5.12 Mount points
 
 | Mount point                      | Description                                                       |
 |--------------------------------- |-------------------------------------------------------------------|
@@ -381,7 +389,7 @@ docker run -it --rm   -p 8161:8161 \
 |`/var/lib/artemis/etc-override`   | Hold the instance configuration files                             |
 |`/var/lib/artemis/lock`           | Hold the command line locks (typically not useful to mount)       |
 
-### 5.12 Exposed ports
+### 5.13 Exposed ports
 
 | Port    | Description                                                     |
 |-------- |-----------------------------------------------------------------|
