@@ -344,7 +344,7 @@ A file name `broker-00.xslt` with content like the following listing, could be u
 
 **Entrypoint Overrides**
 
-Multiple shell scripts can be dropped in the `/var/lib/artemis/etc-override` volume. Those shell files must be named following the name convention `entrypoint-{{num}}.xml` where `num` is a numeric representation of the snippet.
+Multiple shell scripts can be dropped in the `/var/lib/artemis/etc-override` volume. Those shell files must be named following the name convention `entrypoint-{{num}}.sh` where `num` is a numeric representation of the snippet.
 The shell scripts will be *executed* in alphabetical precedence of the file names on startup of the docker container.   
 
 A typical use case for using entrypoint overrides would be if you want to make a minor modification to a file which cannot be overriden using the 2 methods above and you do not want to expose the etc volume. 
