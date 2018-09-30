@@ -43,14 +43,14 @@ if [ "$ARTEMIS_USERNAME" ] && [ "$ARTEMIS_PASSWORD" ]; then
   # From 1.0.0 up to 1.1.0 the artemis roles file was user=groups
   # From 1.2.0 to 1.4.0 became group=users and we still set it with sed
   if echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "1.[01].[0-9]" ; then
-    sed -i "s/artemis=amq/$ARTEMIS_USERNAME=amq\n/g" ../etc/artemis-roles.properties
+    sed -i "s/artemis=amq/$ARTEMIS_USERNAME=amq\\n/g" ../etc/artemis-roles.properties
   elif echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "1.[2-4].[0-9]" ; then
-    sed -i "s/amq[ ]*=.*/amq=$ARTEMIS_USERNAME\n/g" ../etc/artemis-roles.properties
+    sed -i "s/amq[ ]*=.*/amq=$ARTEMIS_USERNAME\\n/g" ../etc/artemis-roles.properties
   fi
   
   # 1.5.0 and later are set using the cli both for username and role
   if echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "1.[0-4].[0-9]" ; then
-    sed -i "s/artemis[ ]*=.*/$ARTEMIS_USERNAME=$ARTEMIS_PASSWORD\n/g" ../etc/artemis-users.properties
+    sed -i "s/artemis[ ]*=.*/$ARTEMIS_USERNAME=$ARTEMIS_PASSWORD\\n/g" ../etc/artemis-users.properties
   else
     $BROKER_HOME/bin/artemis user rm --user artemis
     $BROKER_HOME/bin/artemis user add --user "$ARTEMIS_USERNAME" --password "$ARTEMIS_PASSWORD" --role amq
@@ -96,7 +96,7 @@ if [ "$ENABLE_JMX" ] || [ "$ENABLE_JMX_EXPORTER" ]; then
 fi
 
 if [ "$ENABLE_JMX_EXPORTER" ]; then
-  sed -i "s/^JAVA_ARGS=\"/JAVA_ARGS=\"-javaagent:\/opt\/jmx-exporter\/jmx_prometheus_javaagent.jar=9404:\/opt\/jmx-exporter\/jmx-exporter-config.yaml /g" $CONFIG_PATH/artemis.profile
+  sed -i "s/^JAVA_ARGS=\"/JAVA_ARGS=\"-javaagent:\\/opt\\/jmx-exporter\\/jmx_prometheus_javaagent.jar=9404:\\/opt\\/jmx-exporter\\/jmx-exporter-config.yaml /g" $CONFIG_PATH/artemis.profile
 fi
 
 if [ -e /var/lib/artemis/etc/jolokia-access.xml ]; then
