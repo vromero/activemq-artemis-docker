@@ -19,7 +19,7 @@ TMP_DIR = $(shell DIR=$$(mktemp -d) && chmod 777 -R $${DIR} && echo $${DIR})
 
 build_%:
 	cd src && \
-	docker build --build-arg ACTIVEMQ_ARTEMIS_VERSION=$(call versionFromTag,$*) -t $(call fullTagNameFromTag,$*) -f $(call dockerfileFromTag,$*) .
+	docker build --build-arg ACTIVEMQ_ARTEMIS_VERSION=$(call versionFromTag,$*) $(BUILD_ARGS) -t $(call fullTagNameFromTag,$*) -f $(call dockerfileFromTag,$*) .
 
 test_%: 
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local $(call fullTagNameFromTag,$*) && \

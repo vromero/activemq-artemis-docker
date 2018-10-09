@@ -7,6 +7,7 @@ FROM openjdk:8u171-jdk-stretch as builder
 LABEL maintainer="Victor Romero <victor.romero@gmail.com>"
 
 ARG ACTIVEMQ_ARTEMIS_VERSION
+ARG ACTIVEMQ_DISTRIBUTION_URL
 ENV JMX_EXPORTER_VERSION=0.3.1
 ENV JGROUPS_KUBERNETES_VERSION=0.9.3
 
@@ -22,19 +23,33 @@ RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
     wget=1.18-5+deb9u2 && \
   rm -rf /var/lib/apt/lists/*
 
-# Uncompress and validate
-WORKDIR /opt
-RUN wget "https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-artemis/${ACTIVEMQ_ARTEMIS_VERSION}/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz" && \
-  wget "https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-artemis/${ACTIVEMQ_ARTEMIS_VERSION}/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc" && \
-  wget "http://apache.org/dist/activemq/KEYS" && \
-  gpg --import "KEYS" && \
-  gpg "apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc" && \
-  tar xfz "apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz" && \
-  ln -s "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" "/opt/apache-artemis" && \
-  rm -f "apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz" "KEYS" "apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc"
-
 # Make sure pipes are considered to detemine success, see: https://github.com/hadolint/hadolint/wiki/DL4006
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Uncompress and validate
+WORKDIR /opt
+RUN if (echo "${ACTIVEMQ_DISTRIBUTION_URL}" | grep -Eq  ".zip\$" ) ; \
+    then \
+      mkdir tmp && \
+      wget "${ACTIVEMQ_DISTRIBUTION_URL}" -P tmp/ && \
+      unzip -d tmp -q "tmp/*.zip" && rm -f tmp/*.zip && ls -l tmp/ && \
+        mv tmp/* ./apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION} && \
+        ln -s "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" "/opt/apache-artemis" && \
+        rmdir tmp; \
+    elif test -n "${ACTIVEMQ_DISTRIBUTION_URL}" ; \
+    then \
+      echo "Only .zip format is supported when using ACTIVEMQ_DISTRIBUTION_URL" && \
+      exit 2; \
+    else \
+      wget "https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-artemis/${ACTIVEMQ_ARTEMIS_VERSION}/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz" && \
+      wget "https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-artemis/${ACTIVEMQ_ARTEMIS_VERSION}/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc" && \
+      wget "http://apache.org/dist/activemq/KEYS" && \
+      gpg --import "KEYS" && \
+      gpg "apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc" && \
+      tar xfz "apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz" && \
+      ln -s "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" "/opt/apache-artemis" && \
+      rm -f "apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz" "KEYS" "apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}-bin.tar.gz.asc"; \
+    fi
 
 # Create broker instance
 # Per recommendation of https://activemq.apache.org/artemis/docs/latest/perf-tuning.html : -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:+UseParallelOldGC 

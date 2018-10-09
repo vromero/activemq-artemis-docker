@@ -43,3 +43,5 @@ make 2.6.0-alpine
 
 It is also possible to just build the image without testing with `make build_2.6.0`, just testing: `make test_2.6.0`, running the image: `make run_2.6.0` or even run the image for a shell `make runsh_2.6.0`.
 
+You can also override the artemis binary distribution url by passing a parameter containing a zip file containing the distribution.  ie.  `make BUILD_ARGS="--build-arg ACTIVEMQ_DISTRIBUTION_URL=https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-artemis/2.6.3/apache-artemis-2.6.3-bin.zip" 2.6.3`.   Note that you also need to pass in the version # as the first argument (ie 2.6.3)
+
