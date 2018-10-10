@@ -91,12 +91,12 @@ else
 fi
 
 if [ "$ENABLE_JMX" ] || [ "$ENABLE_JMX_EXPORTER" ]; then
-  sed -i "s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=${JMX_PORT:-1099} -Dcom.sun.management.jmxremote.rmi.port=${JMX_RMI_PORT:-1098} -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false /g" $CONFIG_PATH/artemis.profile
+  sed -i "/com.sun.management.jmxremote/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=${JMX_PORT:-1099} -Dcom.sun.management.jmxremote.rmi.port=${JMX_RMI_PORT:-1098} -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false /g" $CONFIG_PATH/artemis.profile
   mergeXmlFiles "$CONFIG_PATH/broker.xml" /opt/assets/enable-jmx.xml "$CONFIG_PATH/broker.xml"
 fi
 
 if [ "$ENABLE_JMX_EXPORTER" ]; then
-  sed -i "s/^JAVA_ARGS=\"/JAVA_ARGS=\"-javaagent:\\/opt\\/jmx-exporter\\/jmx_prometheus_javaagent.jar=9404:\\/opt\\/jmx-exporter\\/jmx-exporter-config.yaml /g" $CONFIG_PATH/artemis.profile
+  sed -i "/jmx_prometheus_javaagent.jar/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"-javaagent:\\/opt\\/jmx-exporter\\/jmx_prometheus_javaagent.jar=9404:\\/opt\\/jmx-exporter\\/jmx-exporter-config.yaml /g" $CONFIG_PATH/artemis.profile
 fi
 
 if [ -e /var/lib/artemis/etc/jolokia-access.xml ]; then
