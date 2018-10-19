@@ -7,7 +7,8 @@ ALL_VERSION_TAGS=$(foreach remdefault, $(foreach aver, $(ALL_VERSIONS), $(foreac
 
 getPart=$(word $2,$(subst -, ,$1))
 versionFromTag=$(call getPart,$1, 1)
-fullTagNameFromTag=vromero/activemq-artemis:$(or ${TAG},$1)
+variantFromTag=$(call getPart,$1, 2)
+fullTagNameFromTag=vromero/activemq-artemis:$(or ${TAG},$(call versionFromTag,$1))$(if $(call variantFromTag,$1),-$(call variantFromTag,$1),"")
 dockerfileFromTag="Dockerfile$(and $(call getPart,$1,2),.$(call getPart,$1,2))"
 
 # Temporary directories have to have 777 just in case this is run by a user different than 1000:1000
@@ -18,6 +19,7 @@ TMP_DIR = $(shell DIR=$$(mktemp -d) && chmod 777 -R $${DIR} && echo $${DIR})
 	
 
 build_%:
+	$(guile $(GUILEIO))
 	cd src && \
 	docker build --build-arg ACTIVEMQ_ARTEMIS_VERSION=$(call versionFromTag,$*) $(BUILD_ARGS) -t $(call fullTagNameFromTag,$*) -f $(call dockerfileFromTag,$*) .
 
