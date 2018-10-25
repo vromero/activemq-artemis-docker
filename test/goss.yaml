@@ -177,3 +177,12 @@ file:
     owner: artemis
     group: artemis
 {{end}}
+
+{{if and (getEnv "ENABLE_JMX_EXPORTER") (getEnv "TEST_CUSTOM_JMX_EXPORTER_CONFIG") }}
+  /opt/jmx-exporter/etc/jmx-exporter-config.yaml:
+    exists: true
+    owner: artemis
+    group: artemis
+    contains:
+      - "just_for_test"
+{{end}}

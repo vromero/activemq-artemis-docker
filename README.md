@@ -234,6 +234,9 @@ artemis_journal_buffer_size 501760.0
 artemis_journal_max_io 4096.0
 ```
 
+In case you need more control over the metrics that are exported, you can mount a [jmx-exporter](https://github.com/prometheus/jmx_exporter)
+configuration file in `/opt/jmx-exporter/etc-override` with the file name `jmx-exporter-config.yaml`.
+
 ### 5.6 Settings the console's allow origin
 
 ActiveMQ Artemis console uses Jolokia. In the default vanilla non-docker installation Jolokia does set a CORS header to
@@ -383,12 +386,13 @@ Additionally, the following environment variables are supported
 
 ### 5.12 Mount points
 
-| Mount point                      | Description                                                       |
-|--------------------------------- |-------------------------------------------------------------------|
-|`/var/lib/artemis/data`           | Holds the data files used for storing persistent messages         |
-|`/var/lib/artemis/etc`            | Hold the instance configuration files                             |
-|`/var/lib/artemis/etc-override`   | Hold the instance configuration files                             |
-|`/var/lib/artemis/lock`           | Hold the command line locks (typically not useful to mount)       |
+| Mount point                      | Description                                                              |
+|--------------------------------- |--------------------------------------------------------------------------|
+|`/var/lib/artemis/data`           | Holds the data files used for storing persistent messages                |
+|`/var/lib/artemis/etc`            | Holds the instance configuration files                                   |
+|`/var/lib/artemis/etc-override`   | Holds the instance configuration files                                   |
+|`/var/lib/artemis/lock`           | Holds the command line locks (typically not useful to mount)             |
+|`/opt/jmx-exporter/etc-override`  | Holds the configuration file for jmx-exporter `jmx-exporter-config.yaml` |
 
 ### 5.13 Exposed ports
 

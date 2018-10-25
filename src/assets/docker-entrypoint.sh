@@ -96,7 +96,10 @@ if [ "$ENABLE_JMX" ] || [ "$ENABLE_JMX_EXPORTER" ]; then
 fi
 
 if [ "$ENABLE_JMX_EXPORTER" ]; then
-  sed -i "/jmx_prometheus_javaagent.jar/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"-javaagent:\\/opt\\/jmx-exporter\\/jmx_prometheus_javaagent.jar=9404:\\/opt\\/jmx-exporter\\/jmx-exporter-config.yaml /g" $CONFIG_PATH/artemis.profile
+  if [ -f /opt/jmx-exporter/etc-override/jmx-exporter-config.yaml ]; then
+    cp /opt/jmx-exporter/etc-override/jmx-exporter-config.yaml /opt/jmx-exporter/etc/jmx-exporter-config.yaml
+  fi
+  sed -i "/jmx_prometheus_javaagent.jar/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"-javaagent:\\/opt\\/jmx-exporter\\/jmx_prometheus_javaagent.jar=9404:\\/opt\\/jmx-exporter\\/etc\\/jmx-exporter-config.yaml /g" $CONFIG_PATH/artemis.profile
 fi
 
 if [ -e /var/lib/artemis/etc/jolokia-access.xml ]; then
