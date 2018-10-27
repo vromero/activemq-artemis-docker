@@ -109,7 +109,8 @@ RUN wget "https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaag
   echo "$(cat "jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar.sha1")" "jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar" | sha1sum -c - && \
   rm "jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar.sha1" && \
   ln -s "/opt/jmx-exporter/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar" "/opt/jmx-exporter/jmx_prometheus_javaagent.jar"
-COPY assets/jmx-exporter-config.yaml /opt/jmx-exporter
+
+COPY assets/jmx-exporter-config.yaml /opt/jmx-exporter/etc/
 
 ##########################################################
 ## Run Image                                             #
@@ -141,6 +142,7 @@ COPY --from=builder "/var/lib/artemis/etc" "/var/lib/artemis/etc-backup"
 
 RUN ln -s "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" /opt/apache-artemis && chmod 755 /opt/apache-artemis
 RUN chown -R artemis.artemis /var/lib/artemis
+RUN chown -R artemis.artemis /opt/jmx-exporter
 
 RUN mkdir -p /opt/assets
 COPY assets/merge.xslt /opt/assets
@@ -179,6 +181,7 @@ VOLUME ["/var/lib/artemis/tmp"]
 VOLUME ["/var/lib/artemis/etc"]
 VOLUME ["/var/lib/artemis/etc-override"]
 VOLUME ["/var/lib/artemis/lock"]
+VOLUME ["/opt/jmx-exporter/etc-override"]
 
 COPY assets/docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
