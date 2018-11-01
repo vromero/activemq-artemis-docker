@@ -59,12 +59,12 @@ fi
 
 # Update min memory if the argument is passed
 if [ "$ARTEMIS_MIN_MEMORY" ]; then
-  sed -i "s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Xms$ARTEMIS_MIN_MEMORY /g" $CONFIG_PATH/artemis.profile
+  sed -i "/-Xms/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Xms$ARTEMIS_MIN_MEMORY /g" $CONFIG_PATH/artemis.profile
 fi
 
 # Update max memory if the argument is passed
 if [ "$ARTEMIS_MAX_MEMORY" ]; then
-  sed -i "s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Xmx$ARTEMIS_MAX_MEMORY /g" $CONFIG_PATH/artemis.profile
+  sed -i "/-Xmx/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Xmx$ARTEMIS_MAX_MEMORY /g" $CONFIG_PATH/artemis.profile
 fi
 
 # Support extra java opts from JAVA_OPTS env
