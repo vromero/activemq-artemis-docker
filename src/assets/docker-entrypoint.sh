@@ -19,7 +19,7 @@ if [ "$DISABLE_SECURITY" ]; then
     xmlstarlet ed -L \
       -N activemq="urn:activemq" \
       -N core="urn:activemq:core" \
-      --subnode "/activemq:configuration/core:core" \
+      --subnode "/activemq:configuration/core:core[not(core:security-enabled)]" \
       -t elem \
       -n "security-enabled" \
       -v "false" ../etc/broker.xml 
