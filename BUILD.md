@@ -28,7 +28,7 @@ make
 This will run the full build (with the exception of the deployment phase) for all versions presents in the ALL_VERSIONS line in the Makefile, e.g:
 
 ```Makefile
-ALL_VERSIONS=1.1.0 1.2.0 1.3.0 1.4.0 1.5.0 1.5.1 1.5.2 1.5.3 1.5.4 1.5.5 1.5.6 2.0.0 2.1.0 2.2.0 2.3.0 2.4.0 2.5.0 2.6.0 2.6.1 2.6.2 2.6.3
+ALL_VERSIONS=1.1.0 1.2.0 1.3.0 1.4.0 1.5.0 1.5.1 1.5.2 1.5.3 1.5.4 1.5.5 1.5.6 2.0.0 2.1.0 2.2.0 2.3.0 2.4.0 2.5.0 2.6.0 2.6.1 2.6.2 2.6.3 2.6.4
 ```
 
 To just build *just one version* you can call `make` with `VERSION[-VARIANT]` where variant can be `-alpine` for an Alpine based image build or just nothing for a Debian based one, e.g:
@@ -43,5 +43,5 @@ make 2.6.0-alpine
 
 It is also possible to just build the image without testing with `make build_2.6.0`, just testing: `make test_2.6.0`, running the image: `make run_2.6.0` or even run the image for a shell `make runsh_2.6.0`.
 
-You can also override the artemis binary distribution url by passing a parameter containing a zip file containing the distribution.  ie.  `make BUILD_ARGS="--build-arg ACTIVEMQ_DISTRIBUTION_URL=https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-artemis/2.6.3/apache-artemis-2.6.3-bin.zip" 2.6.3`.   Note that you also need to pass in the version # as the first argument (ie 2.6.3)
+You can also override the artemis binary distribution url by passing a parameter containing a zip file containing the distribution.  ie.  `make BUILD_ARGS="--build-arg ACTIVEMQ_DISTRIBUTION_URL=https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-artemis/2.6.4/apache-artemis-2.6.4-bin.zip" 2.6.4`.   Note that you also need to pass in the version # as the first argument (ie 2.6.4)
 
