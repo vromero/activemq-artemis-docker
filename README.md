@@ -1,4 +1,4 @@
-![latest 2.6.4](https://img.shields.io/badge/latest-2.6.4-blue.svg?style=flat) ![License MIT](https://img.shields.io/badge/license-APACHE-blue.svg) [![Build Status](https://travis-ci.org/vromero/activemq-artemis-docker.svg?branch=master)](https://travis-ci.org/vromero/activemq-artemis-docker) [![](https://img.shields.io/docker/stars/vromero/activemq-artemis.svg)](https://hub.docker.com/r/vromero/activemq-artemis 'DockerHub') [![](https://img.shields.io/docker/pulls/vromero/activemq-artemis.svg)](https://hub.docker.com/r/vromero/activemq-artemis 'DockerHub') [![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/vromero)
+![latest 2.7.0](https://img.shields.io/badge/latest-2.7.0-blue.svg?style=flat) ![License MIT](https://img.shields.io/badge/license-APACHE-blue.svg) [![Build Status](https://travis-ci.org/vromero/activemq-artemis-docker.svg?branch=master)](https://travis-ci.org/vromero/activemq-artemis-docker) [![](https://img.shields.io/docker/stars/vromero/activemq-artemis.svg)](https://hub.docker.com/r/vromero/activemq-artemis 'DockerHub') [![](https://img.shields.io/docker/pulls/vromero/activemq-artemis.svg)](https://hub.docker.com/r/vromero/activemq-artemis 'DockerHub') [![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/vromero)
 
 ## 1. What is ActiveMQ Artemis?
 
@@ -11,6 +11,7 @@
 | Debian Based                                                                                 | Alpine Based                                                                                               |
 |--------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | [`latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile) | [`latest-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile.alpine) |
+| [`2.7.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile)  | [`2.7.0-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile.alpine)  |
 | [`2.6.4`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile)  | [`2.6.4-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile.alpine)  |
 | [`2.6.3`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile)  | [`2.6.3-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile.alpine)  |
 | [`2.6.2`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile)  | [`2.6.2-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile.alpine)  |
@@ -49,8 +50,8 @@ the build is [reproducible](https://reproducible-builds.org/) in a best effort b
 
 ## 4. How to use this image
 
-You can find how to run this image in the section *Running the image*. Beware as the default 
-configuration is not recommended for production usage, at the very least you'll want to set your own 
+You can find how to run this image in the section *Running the image*. Beware as the default
+configuration is not recommended for production usage, at the very least you'll want to set your own
 login and password. This is described with detail in section *Setting the username and password*.
 In case you also want to set some customized memory limits, this is described in
 *Setting the memory values*.
@@ -64,7 +65,7 @@ in general. For that reason its not supported for most of the use cases. However
 image in orchestrators like Kubernetes you might want to connect from a sidecar where it
 does make sense. How to enable JMX is described in section *Enabling JMX*.
 
-The Jolokia console CORS header won't be a problem by default as it set to `*`, however if you want to 
+The Jolokia console CORS header won't be a problem by default as it set to `*`, however if you want to
 narrow it down for improved security don't miss the section *Settings the console's allow origin*.
 
 In rare ocassions you might find the need of running ActiveMQ Artemis without security. This
@@ -122,7 +123,7 @@ docker run -it --rm \
 
 ### 5.2 Setting the memory values
 
-By default this image does leverage the new features that came in Java 8u131 related to memory ergonomics in containerized environments, more information about it [here](https://developers.redhat.com/blog/2017/03/14/java-inside-docker/). 
+By default this image does leverage the new features that came in Java 8u131 related to memory ergonomics in containerized environments, more information about it [here](https://developers.redhat.com/blog/2017/03/14/java-inside-docker/).
 
 It does use a `-XX:MaxRAMFraction=2` meaning that half of the memory made avaiable to the container will be used by the Java heap, leaving the other half for other types of Java memory and other OS purposes. However, in some
 circumstances it might be advisable to fine tune the memory to manual values, in that case you can set the memory that you application needs by using the parameters `ARTEMIS_MIN_MEMORY` and `ARTEMIS_MAX_MEMORY`:
@@ -148,7 +149,7 @@ Different kinds of volumes need different values in fine tuning. In ActiveMQ Art
 |`NEVER`           | Never do the performance journal configuration                    |
 |`ALWAYS`          | Always do the performance journal configuration                   |
 
-It is safe to leave it as `AUTO` even for the casual usage of this image given that the image already have 
+It is safe to leave it as `AUTO` even for the casual usage of this image given that the image already have
 incorporated a `.perf-journal-completed` for its internal directory used when no volume is mounted.
 One example of execution with the performance journal calibration set to be executed always can be found
 in the next listing:
@@ -186,7 +187,7 @@ with prometheus to ease monitoring.
 This image can export such metrics in port `9404` thanks to the integration with the Prometheus [JMX exporter](https://github.com/prometheus/jmx_exporter). In order to enable it the environmnet variable `ENABLE_JMX_EXPORTER` should
 be present, it will also inderectly enable JMX as if `ENABLE_JMX` was set.
 
-To see what is exported just: 
+To see what is exported just:
 
 ```console
 docker run -it --rm \
@@ -255,7 +256,7 @@ docker run -it --rm \
 ### 5.7 Overriding parts of the configuration
 
 ActiveMQ Artemis support disabling the security using the element `<security-enabled>false</security-enabled>`
-as described in the official [documentation](https://activemq.apache.org/artemis/docs/latest/security.html). 
+as described in the official [documentation](https://activemq.apache.org/artemis/docs/latest/security.html).
 This docker image makes it simple to set that element using the environment property: `DISABLE_SECURITY`:
 
 ```console
@@ -273,7 +274,7 @@ It is possible to mount a whole artemis `etc` directory in this image in the vol
 Be careful as this might be an overkill for many situations where only small tweaks are necessary.  
 
 When using this technique be aware that the configuration files of Artemis might change from version to version.
-Generally speaking, when in need to configure Artemis beyond what it is offered by this image using environment 
+Generally speaking, when in need to configure Artemis beyond what it is offered by this image using environment
 variables, it is recommended to use the partial override mechanism described in the next section.
 
 ### 5.9 Overriding parts of the configuration
@@ -352,7 +353,7 @@ A file name `broker-00.xslt` with content like the following listing, could be u
 Multiple shell scripts can be dropped in the `/var/lib/artemis/etc-override` volume. Those shell files must be named following the name convention `entrypoint-{{num}}.sh` where `num` is a numeric representation of the snippet.
 The shell scripts will be *executed* in alphabetical precedence of the file names on startup of the docker container.   
 
-A typical use case for using entrypoint overrides would be if you want to make a minor modification to a file which cannot be overriden using the 2 methods above and you do not want to expose the etc volume. 
+A typical use case for using entrypoint overrides would be if you want to make a minor modification to a file which cannot be overriden using the 2 methods above and you do not want to expose the etc volume.
 
 
 If you would like to see the final result of your transformations, execute the following:
