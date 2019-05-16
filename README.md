@@ -416,11 +416,13 @@ a helm chart for Kubernetes and some configuration tuning for OpenShift.
 ### 6.1 Running in Kubernetes
 
 ActiveMQ Artemis can leverage [JGroups](http://www.jgroups.org/) to discover the members of the cluster. And JGroups
-can be extended with a plugin called [jgroups-kubernetes](https://github.com/jgroups-extras/jgroups-kubernetes)
-that allows JGroups to discover using Kubernetes.
+can be extended with a plugin called [jgroups-kubernetes](https://github.com/jgroups-extras/jgroups-kubernetes/tree/0.9.3)
+that allows JGroups to discover using Kubernetes. Both KUBE_PING (via Kubernetes API) and DNS_PING (using the SRV records of a
+[Kubernetes service](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#srv-records)) building blocks are
+included to facilitate initial membership discovery.
 
-[jgroups-kubernetes](https://github.com/jgroups-extras/jgroups-kubernetes) version `0.9.3` is included in the classpath of
-this image, however everything about the configuration of jgroups and jgroups-kubernetes is left to the user.
+[jgroups-kubernetes](https://github.com/jgroups-extras/jgroups-kubernetes/tree/0.9.3) version `0.9.3` is included in the
+classpath of this image, however everything about the configuration of jgroups and jgroups-kubernetes is left to the user.
 
 If you rather prefer a easier solution to run a cluster of ActiveMQ Artemis nodes, there is an attempt to create a Helm chart
 by the same author of this image. It can be found [here](https://github.com/vromero/activemq-artemis-helm). It
