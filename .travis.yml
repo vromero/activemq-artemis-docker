@@ -26,28 +26,30 @@ env:
   - VERSION=1.5.5 VARIANT=alpine
   - VERSION=1.5.6                ALIASES="1.5-latest 1-latest"
   - VERSION=1.5.6 VARIANT=alpine ALIASES="1.5-alpine-latest 1-alpine-latest"
-  - VERSION=2.0.0                ALIASES="2.0-latest 2.0-latest"
-  - VERSION=2.0.0 VARIANT=alpine ALIASES="2.0-alpine-latest 2.0-alpine-latest"
-  - VERSION=2.1.0                ALIASES="2.1-latest 2.1-latest"
-  - VERSION=2.1.0 VARIANT=alpine ALIASES="2.1-alpine-latest 2.1-alpine-latest"
-  - VERSION=2.2.0                ALIASES="2.2-latest 2.2-latest"
-  - VERSION=2.2.0 VARIANT=alpine ALIASES="2.2-alpine-latest 2.2-alpine-latest"
-  - VERSION=2.3.0                ALIASES="2.3-latest 2.3-latest"
-  - VERSION=2.3.0 VARIANT=alpine ALIASES="2.3-alpine-latest 2.3-alpine-latest"
-  - VERSION=2.4.0                ALIASES="2.4-latest 2.4-latest"
-  - VERSION=2.4.0 VARIANT=alpine ALIASES="2.4-alpine-latest 2.4-alpine-latest"
-  - VERSION=2.5.0                ALIASES="2.5-latest 2.5-latest"
-  - VERSION=2.5.0 VARIANT=alpine ALIASES="2.5-alpine-latest 2.5-alpine-latest"
+  - VERSION=2.0.0                ALIASES="2.0-latest"
+  - VERSION=2.0.0 VARIANT=alpine ALIASES="2.0-alpine-latest"
+  - VERSION=2.1.0                ALIASES="2.1-latest"
+  - VERSION=2.1.0 VARIANT=alpine ALIASES="2.1-alpine-latest"
+  - VERSION=2.2.0                ALIASES="2.2-latest"
+  - VERSION=2.2.0 VARIANT=alpine ALIASES="2.2-alpine-latest"
+  - VERSION=2.3.0                ALIASES="2.3-latest"
+  - VERSION=2.3.0 VARIANT=alpine ALIASES="2.3-alpine-latest"
+  - VERSION=2.4.0                ALIASES="2.4-latest"
+  - VERSION=2.4.0 VARIANT=alpine ALIASES="2.4-alpine-latest"
+  - VERSION=2.5.0                ALIASES="2.5-latest"
+  - VERSION=2.5.0 VARIANT=alpine ALIASES="2.5-alpine-latest"
   - VERSION=2.6.0
   - VERSION=2.6.0 VARIANT=alpine
   - VERSION=2.6.1
   - VERSION=2.6.1 VARIANT=alpine
   - VERSION=2.6.2
   - VERSION=2.6.2 VARIANT=alpine    
-  - VERSION=2.6.3
-  - VERSION=2.6.3 VARIANT=alpine
-  - VERSION=2.6.4 ALIASES="2.6-latest 2.6-latest"
-  - VERSION=2.6.4 VARIANT=alpine ALIASES="2.6-alpine-latest 2.2-alpine-latest"
+  - VERSION=2.6.3 ALIASES="2.6-latest 2.6-latest"
+  - VERSION=2.6.3 VARIANT=alpine ALIASES="2.6-alpine-latest"
+  - VERSION=2.7.0 ALIASES="2.7-latest"
+  - VERSION=2.7.0 VARIANT=alpine ALIASES="2.7-alpine-latest"
+  - VERSION=2.8.0 ALIASES="2.8-latest 2-latest"
+  - VERSION=2.8.0 VARIANT=alpine ALIASES="2.8-alpine-latest 2-alpine-latest"
 
 before_install:
   - curl -L https://goss.rocks/install | sudo sh
