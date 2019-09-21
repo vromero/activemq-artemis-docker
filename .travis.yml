@@ -50,8 +50,10 @@ env:
   - VERSION=2.7.0 VARIANT=alpine ALIASES="2.7-alpine-latest"
   - VERSION=2.8.0 ALIASES="2.8-latest"
   - VERSION=2.8.0 VARIANT=alpine ALIASES="2.8-alpine-latest"
-  - VERSION=2.9.0 ALIASES="2.9-latest 2-latest"
-  - VERSION=2.9.0 VARIANT=alpine ALIASES="2.9-alpine-latest 2-alpine-latest"
+  - VERSION=2.9.0 ALIASES="2.9-latest"
+  - VERSION=2.9.0 VARIANT=alpine ALIASES="2.9-alpine-latest"
+  - VERSION=2.10.0 ALIASES="2.10-latest 2-latest"
+  - VERSION=2.10.0 VARIANT=alpine ALIASES="2.10-alpine-latest 2-alpine-latest"
 
 before_install:
   - curl -L https://goss.rocks/install | sudo sh
