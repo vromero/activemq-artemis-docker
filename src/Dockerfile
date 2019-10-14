@@ -129,7 +129,7 @@ RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
     libaio1=0.3.110-3 \
     xmlstarlet=1.6.1-2 \
     jq=1.5+dfsg-1.3 \
-    gettext-base=0.19.8.1-2 \
+    gettext-base=0.19.8.1-2+deb9u1 \
     dumb-init=1.2.0-1 && \
   rm -rf /var/lib/apt/lists/*
 
