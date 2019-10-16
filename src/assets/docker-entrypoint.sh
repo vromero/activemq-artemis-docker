@@ -29,7 +29,7 @@ fi
 sed -i "s/logger.handlers=.*/logger.handlers=CONSOLE/g" ${CONFIG_PATH}/logging.properties
 
 # Set the broker name to the host name to ease experience in external monitors and in the console
-if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "(1\\.[^0-2]\\.[0-9]+|2\\.[0-9]\\.[0-9]+)" ) ; then 
+if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "(1\\.[^0-2]\\.[0-9]+|2\\.[0-9]+\\.[0-9]+)" ) ; then
   xmlstarlet ed -L \
     -N activemq="urn:activemq" \
     -N core="urn:activemq:core" \
@@ -110,7 +110,7 @@ performanceJournal() {
   perfJournalConfiguration=${ARTEMIS_PERF_JOURNAL:-AUTO}
   if [ "$perfJournalConfiguration" = "AUTO" ] || [ "$perfJournalConfiguration" = "ALWAYS" ]; then
 
-    if [ -e /var/lib/artemis/data/.perf-journal-completed ]; then
+    if [ "$perfJournalConfiguration" = "AUTO" ] && [ -e /var/lib/artemis/data/.perf-journal-completed ]; then
       echo "Volume's journal buffer already fine tuned"
       return
     fi
@@ -132,11 +132,15 @@ performanceJournal() {
     if [ "$perfJournalConfiguration" = "AUTO" ]; then
       touch /var/lib/artemis/data/.perf-journal-completed
     fi
+  else
+    echo "Skipping performance journal tuning as per user request"
   fi
 }
 
-if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq  "(1.5\\.[3-5]|[^1]\\.[0-9]\\.[0-9]+)" ) ; then 
+if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq  "(1.5\\.[^12]|[^1]\\.[0-9]+\\.[0-9]+)" ) ; then 
   performanceJournal
+else
+  echo "Ignoring any performance journal parameter as version predates it: ${ACTIVEMQ_ARTEMIS_VERSION}"
 fi
 
 # Add BROKER_CONFIGS env variable to startup options
