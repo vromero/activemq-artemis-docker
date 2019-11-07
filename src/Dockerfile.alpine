@@ -115,7 +115,7 @@ COPY assets/jmx-exporter-config.yaml /opt/jmx-exporter/etc/
 ##########################################################
 ## Run Image                                             #
 ##########################################################
-FROM openjdk:8-jre-alpine
+FROM openjdk:8u212-jre-alpine3.9
 LABEL maintainer="Victor Romero <victor.romero@gmail.com>"
 ARG ACTIVEMQ_ARTEMIS_VERSION
 ENV ACTIVEMQ_ARTEMIS_VERSION=$ACTIVEMQ_ARTEMIS_VERSION
