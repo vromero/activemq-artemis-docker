@@ -102,6 +102,38 @@ if [ "$ENABLE_JMX_EXPORTER" ]; then
   sed -i "/jmx_prometheus_javaagent.jar/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"-javaagent:\\/opt\\/jmx-exporter\\/jmx_prometheus_javaagent.jar=9404:\\/opt\\/jmx-exporter\\/etc\\/jmx-exporter-config.yaml /g" $CONFIG_PATH/artemis.profile
 fi
 
+if [ -n "$CRITICAL_ANALYZER" ]; then
+  xmlstarlet ed -L \
+    -N activemq="urn:activemq" \
+    -N core="urn:activemq:core" \
+    -u "/activemq:configuration/core:core/core:critical-analyzer" \
+    -v "$CRITICAL_ANALYZER" ../etc/broker.xml
+fi
+
+if [ -n "$CRITICAL_ANALYZER_TIMEOUT" ]; then
+  xmlstarlet ed -L \
+    -N activemq="urn:activemq" \
+    -N core="urn:activemq:core" \
+    -u "/activemq:configuration/core:core/core:critical-analyzer-timeout" \
+    -v "${CRITICAL_ANALYZER_TIMEOUT}" ../etc/broker.xml
+fi
+
+if [ -n "$CRITICAL_ANALYZER_CHECK_PERIOD" ]; then
+  xmlstarlet ed -L \
+    -N activemq="urn:activemq" \
+    -N core="urn:activemq:core" \
+    -u "/activemq:configuration/core:core/core:critical-analyzer-check-period" \
+    -v "${CRITICAL_ANALYZER_CHECK_PERIOD}" ../etc/broker.xml
+fi
+
+if [ -n "$CRITICAL_ANALYZER_POLICY" ]; then
+  xmlstarlet ed -L \
+    -N activemq="urn:activemq" \
+    -N core="urn:activemq:core" \
+    -u "/activemq:configuration/core:core/core:critical-analyzer-policy" \
+    -v "${CRITICAL_ANALYZER_POLICY}" ../etc/broker.xml
+fi
+
 if [ -e /var/lib/artemis/etc/jolokia-access.xml ]; then
   xmlstarlet ed --inplace -u '/restrict/cors/allow-origin' -v "${JOLOKIA_ALLOW_ORIGIN:-*}" /var/lib/artemis/etc/jolokia-access.xml
 fi

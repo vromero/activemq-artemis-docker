@@ -53,7 +53,7 @@ testdockerfile_%:
 	cd src && \
 	docker run --rm -i hadolint/hadolint < $(call dockerfileFromTag,$*)
 
-test_%: test_can_run_% test_can_set_username_password_% test_can_autorun_perf_journal_% test_can_skip_perf_journal_% test_can_enable_jmx_% test_can_enable_jmx_exporter_% test_can_enable_jmx_exporter_with_custom_config_% test_can_set_memory_limits_% test_can_disable_security_% test_can_disable_security_% test_can_override_etc_% test_can_override_etc_%
+test_%: test_can_run_% test_can_set_username_password_% test_can_autorun_perf_journal_% test_can_skip_perf_journal_% test_can_enable_jmx_% test_can_enable_jmx_exporter_% test_can_enable_jmx_exporter_with_custom_config_% test_can_set_memory_limits_% test_can_disable_security_% test_can_disable_security_% test_can_override_etc_% test_can_override_etc_% test_can_set_critical_analyzer_%
 	
 
 test_can_run_%:
@@ -70,6 +70,9 @@ test_can_skip_perf_journal_%:
 
 test_can_enable_jmx_exporter_with_custom_config_%:
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e ENABLE_JMX_EXPORTER=true -e TEST_CUSTOM_JMX_EXPORTER_CONFIG=true -v $$(pwd)/test/etc-override:/opt/jmx-exporter/etc-override $(call fullTagNameFromTag,$*) > /dev/null 2>&1
+
+test_can_set_critical_analyzer_%:
+	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e CRITICAL_ANALYZER=false -e CRITICAL_ANALYZER_TIMEOUT=123 -e CRITICAL_ANALYZER_CHECK_PERIOD=456 -e CRITICAL_ANALYZER_POLICY=LOG $(call fullTagNameFromTag,$*) > /dev/null 2>&1
 
 test_can_enable_jmx_exporter_%:
 	GOSS_FILES_PATH=$$(pwd)/test GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e ENABLE_JMX_EXPORTER=true $(call fullTagNameFromTag,$*) > /dev/null 2>&1
