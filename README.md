@@ -164,7 +164,20 @@ docker run -it --rm \
   vromero/activemq-artemis
 ```
 
-### 5.4 Enabling JMX
+### 5.4 Critical Analysis
+
+Since 2.3.0 ActiveMQ Artemis can monitor *Queue delivery (add to the queue)*, *Journal storage* and *Paging operations* timings for anomalies in case there are IO errors or Memory issues (describe in detail [here](https://activemq.apache.org/components/artemis/documentation/latest/critical-analysis.html)).
+
+The following properties can configure the critical analysis:
+
+| Value                            | Description                                                                       |
+|----------------------------------|-----------------------------------------------------------------------------------|
+|`CRITICAL_ANALYZER`               | Enable or disable the critical analysis (default true or false)                   |
+|`CRITICAL_ANALYZER_TIMEOUT`       | Timeout used to do the critical analysis (default 120000 milliseconds)            |
+|`CRITICAL_ANALYZER_CHECK_PERIOD`  | Time used to check the response times (default half of critical-analyzer-timeout) |
+|`CRITICAL_ANALYZER_POLICY`        | Should the server log, be halted or shutdown upon failures (default HALT or LOG)  |
+
+### 5.5 Enabling JMX
 
 Due to the JMX's nature, often with dynamics ports for RMI and the need having configure the public IP address to reach the RMI server.
 It is discouraged to use JMX in Docker. Although in certain scenarios, it could be advisable, as when deploying in a
@@ -183,7 +196,7 @@ docker run -it --rm \
   vromero/activemq-artemis
 ```
 
-### 5.5 Prometheus metrics
+### 5.6 Prometheus metrics
 
 When using this image in a orchestrated environmnet like in Kubernetes. It is often useful to have metrics endpoints compatible
 with prometheus to ease monitoring.
@@ -243,7 +256,7 @@ artemis_journal_max_io 4096.0
 In case you need more control over the metrics that are exported, you can mount a [jmx-exporter](https://github.com/prometheus/jmx_exporter)
 configuration file in `/opt/jmx-exporter/etc-override` with the file name `jmx-exporter-config.yaml`.
 
-### 5.6 Settings the console's allow origin
+### 5.7 Settings the console's allow origin
 
 ActiveMQ Artemis console uses Jolokia. In the default vanilla non-docker installation Jolokia does set a CORS header to
 allow only localhost. In the docker image this create problems as things are rarely accesed as localhost.
@@ -257,7 +270,7 @@ docker run -it --rm \
   vromero/activemq-artemis
 ```
 
-### 5.7 Overriding parts of the configuration
+### 5.8 Overriding parts of the configuration
 
 ActiveMQ Artemis support disabling the security using the element `<security-enabled>false</security-enabled>`
 as described in the official [documentation](https://activemq.apache.org/artemis/docs/latest/security.html).
@@ -272,7 +285,7 @@ docker run -it --rm \
 Please keep in mind no production system, possible no environment at all, should ever disable security.
 Make sure you read the falacy number one of the [falacies of the distributed computing](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing) before disabling the security.
 
-### 5.8 Using external configuration files
+### 5.9 Using external configuration files
 
 It is possible to mount a whole artemis `etc` directory in this image in the volume `/var/lib/artemis/etc`.
 Be careful as this might be an overkill for many situations where only small tweaks are necessary.  
@@ -281,7 +294,7 @@ When using this technique be aware that the configuration files of Artemis might
 Generally speaking, when in need to configure Artemis beyond what it is offered by this image using environment
 variables, it is recommended to use the partial override mechanism described in the next section.
 
-### 5.9 Overriding parts of the configuration
+### 5.10 Overriding parts of the configuration
 
 The default ActiveMQ Artemis configuration can be partially modified, instead of completely replaced as in the previous section, using three mechanisms. Merge snippets, XSLT tranformations and entrypoint overrides.
 
@@ -369,7 +382,7 @@ docker run -it --rm \
   cat ../etc/broker.xml
 ```
 
-### 5.10 Broker Config
+### 5.11 Broker Config
 
 ActiveMQ allows you to override key configuration values using [System properties](https://activemq.apache.org/artemis/docs/latest/configuration-index.html#System-properties).
 This docker image has built in support to set these values by passing environment variables prefixed with BROKER_CONFIG to the docker image.  
@@ -382,7 +395,7 @@ docker run -it --rm   -p 8161:8161 \
     vromero/activemq-artemis
 ```
 
-### 5.11 Environment Variables
+### 5.12 Environment Variables
 
 Additionally, the following environment variables are supported
 
@@ -390,7 +403,7 @@ Additionally, the following environment variables are supported
 |---------------- |----------------- |-------------------------------------------------------------------|
 |JAVA_OPTS        |                  |Will pass additional java options to the artemis runtime           |
 
-### 5.12 Mount points
+### 5.13 Mount points
 
 | Mount point                      | Description                                                              |
 |--------------------------------- |--------------------------------------------------------------------------|
@@ -400,7 +413,7 @@ Additionally, the following environment variables are supported
 |`/var/lib/artemis/lock`           | Holds the command line locks (typically not useful to mount)             |
 |`/opt/jmx-exporter/etc-override`  | Holds the configuration file for jmx-exporter `jmx-exporter-config.yaml` |
 
-### 5.13 Exposed ports
+### 5.14 Exposed ports
 
 | Port    | Description                                                     |
 |-------- |-----------------------------------------------------------------|

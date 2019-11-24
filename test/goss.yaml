@@ -94,6 +94,22 @@ file:
       - <security-enabled>false</security-enabled>
   {{end}}
 {{ end }}
+{{ if (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "(2\\.[3-9]\\.\\d+|2\\.\\d{2}\\.\\d+)") }}
+  {{if getEnv "CRITICAL_ANALYZER" }}
+      - <critical-analyzer>{{.Env.CRITICAL_ANALYZER }}</critical-analyzer>
+  {{end}}
+  {{if getEnv "CRITICAL_ANALYZER_TIMEOUT" }}
+      - <critical-analyzer-timeout>{{.Env.CRITICAL_ANALYZER_TIMEOUT }}</critical-analyzer-timeout>
+  {{end}}
+  {{if getEnv "CRITICAL_ANALYZER_CHECK_PERIOD" }}
+      - <critical-analyzer-check-period>{{.Env.CRITICAL_ANALYZER_CHECK_PERIOD }}</critical-analyzer-check-period>
+  {{end}}
+  {{if getEnv "CRITICAL_ANALYZER_POLICY" }}
+      - <critical-analyzer-policy>{{.Env.CRITICAL_ANALYZER_POLICY }}</critical-analyzer-policy>
+  {{end}}
+{{ end }}
+
+
 
   /var/lib/artemis/etc/artemis-users.properties:
     exists: true
