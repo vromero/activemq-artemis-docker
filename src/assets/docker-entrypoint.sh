@@ -75,15 +75,16 @@ mergeXmlFiles() {
   mv /tmp/broker-merge.xml "$3"
 }
 
-files=$(find $OVERRIDE_PATH -name "broker*" -type f | cut -d. -f1 | sort -u );
+files=$(find $OVERRIDE_PATH -name "broker*" -type f | sort -u );
 if [ ${#files[@]} ]; then
   for f in $files; do
-    if [ -f "$f.xslt" ]; then
-      xmlstarlet tr "$f.xslt" $CONFIG_PATH/broker.xml > /tmp/broker-tr.xml
+    fnoext=${f%.*}
+    if [ -f "$fnoext.xslt" ]; then
+      xmlstarlet tr "$fnoext.xslt" $CONFIG_PATH/broker.xml > /tmp/broker-tr.xml
       mv /tmp/broker-tr.xml $CONFIG_PATH/broker.xml
     fi
-    if [ -f "$f.xml" ]; then
-      mergeXmlFiles "$CONFIG_PATH/broker.xml" "$f.xml" "$CONFIG_PATH/broker.xml"
+    if [ -f "$fnoext.xml" ]; then
+      mergeXmlFiles "$CONFIG_PATH/broker.xml" "$fnoext.xml" "$CONFIG_PATH/broker.xml"
     fi
   done
 else
