@@ -1,23 +1,32 @@
 
 .PHONY: help build test run all
 
-# All the versions supported, useful to build all versions locally with a single command
-ALL_VERSIONS=1.1.0 1.2.0 1.3.0 1.4.0 1.5.0 1.5.1 1.5.2 1.5.3 1.5.4 1.5.5 1.5.6 2.0.0 2.1.0 2.2.0 2.3.0 2.4.0 2.5.0 2.6.0 2.6.1 2.6.2 2.6.3 2.6.4 2.7.0 2.8.0 2.9.0 2.10.0 2.10.1
-# Variants supported for each version
-ALL_VARIANTS=default alpine
-# All pairs of versions-variants. `default` will not appear in the tag for the rest an `-variant` will be added
-ALL_VERSION_TAGS=$(foreach remdefault, $(foreach aver, $(ALL_VERSIONS), $(foreach avar, $(ALL_VARIANTS), $(aver)-$(avar) ) ), $(remdefault:-default=) )
+VERSIONS_FILE=tags.csv
+
+ALL_VERSION_TAGS=$(shell awk -F "," '{print $$1}' tags.csv)
 
 getPart=$(word $2,$(subst -, ,$1))
+
+# Returns the version from a tag, e.g: 1.1.0-alpine will return 1.1.0
 versionFromTag=$(call getPart,$1, 1)
+
+# Returns the variant from a tag, e.g: 1.1.0 will return nothing, 1.1.0-alpine will return alpine
 variantFromTag=$(call getPart,$1, 2)
+
+# Lookup tags.csv for a base image using the tag as key
+baseImageFromTag=$(shell awk -F "," '$$1 == "$1" {print $$2}' tags.csv)
+
+# Returns the appropriate dockerfile to build a given tag
 dockerfileFromTag="Dockerfile$(and $(call getPart,$1,2),.$(call getPart,$1,2))"
 
+# Lookup tags.csv for tag aliases using the tag as key
+aliasesFromTag=$(shell awk -F "," '$$1 == "$1" {print $$3}' tags.csv)
+
+# Returns a full tag from a given short tag, e.g: 2.6.1-alpine -> vromero/activemq-artemis:2.6.1
 fullTagNameFromTag=vromero/activemq-artemis:$(call versionFromTag,$1)$(if $(call variantFromTag,$1),-$(call variantFromTag,$1),"")
 
-# If an environment variable `ALIASES` is present, this will return space-separated full image coordinates from each space-separated element in there
-# This is useful to not to repeat builds for aliases like latest or 2.4-latest
-fullAliasesTagNames=$(foreach var,${ALIASES}, vromero/activemq-artemis:$(var))
+# Convert aliases into full image coordinates
+fullAliasesTagNames=$(foreach var,$(call aliasesFromTag,$1), vromero/activemq-artemis:$(var))
 
 # Temporary directories have to have 777 just in case this is run by a user different than 1000:1000
 # See the following for more info: https://github.com/moby/moby/issues/7198
@@ -28,18 +37,18 @@ TMP_DIR = $(shell DIR=$$(mktemp -d) && chmod 777 -R $${DIR} && echo $${DIR})
 
 build_%:
 	cd src && \
-	docker build --build-arg ACTIVEMQ_ARTEMIS_VERSION=$(call versionFromTag,$*) $(BUILD_ARGS) -t $(call fullTagNameFromTag,$*) -f $(call dockerfileFromTag,$*) .
+	docker build --build-arg ACTIVEMQ_ARTEMIS_VERSION=$(call versionFromTag,$*) --build-arg BASE_IMAGE=$(call baseImageFromTag,$*) $(BUILD_ARGS) -t $(call fullTagNameFromTag,$*) -f $(call dockerfileFromTag,$*) .
 
 testentrypoint_%:
 	shellcheck --version
 	shellcheck src/assets/docker-entrypoint.sh
 
 tag_%:
-	for alias in $(call fullAliasesTagNames); do docker tag $(call fullTagNameFromTag,$*) $$alias ; done
+	for alias in $(call fullAliasesTagNames,$*); do docker tag $(call fullTagNameFromTag,$*) $$alias ; done
 
 push_%:
 	docker push $(call fullTagNameFromTag,$*)
-	for alias in $(call fullAliasesTagNames); do docker push $$alias ; done
+	for alias in $(call fullAliasesTagNames,$1); do docker push $$alias ; done
 
 run_%: build
 	docker run -i -t --rm $(call fullTagNameFromTag,$*)
