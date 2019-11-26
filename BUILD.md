@@ -12,6 +12,7 @@ To build the ActiveMQ Artemis Docker Image the following tools are necessary:
 - Make
 - goss and dgoss
 - shellcheck
+- bats-core
 
 ## Supported Platforms
 
