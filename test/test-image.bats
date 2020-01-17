@@ -46,9 +46,10 @@
 }
 
 @test "docker container can replace etc" {
-  	# Temporary directories have to have 777 just in case this is run by a user different than 1000:1000
-  	# See the following for more info: https://github.com/moby/moby/issues/7198
-  	TMP_DIR=$(DIR=$(mktemp -d) && chmod 777 -R ${DIR} && echo ${DIR})
+	# Seems like Docker plays well with the Apple's filesystem sandbox guidelines but mktemp doesn't?
+	# Using mkdir instead of mktemp
+	# see: https://stackoverflow.com/questions/45122459/docker-mounts-denied-the-paths-are-not-shared-from-os-x-and-are-not-known
+  	TMP_DIR=$(mkdir -p tmp)
 	GOSS_FILES_PATH=$BATS_TEST_DIRNAME/assets GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -v "${TMP_DIR}:/var/lib/artemis/etc" -e RESTORE_CONFIGURATION=true ${COORDINATES}
 	rm -Rf "${TMP_DIR}"
 }
