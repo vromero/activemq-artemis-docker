@@ -25,9 +25,6 @@ if [ "$DISABLE_SECURITY" ]; then
       -v "false" ../etc/broker.xml 
 fi
 
-# Log to tty to enable docker logs container-name
-sed -i "s/logger.handlers=.*/logger.handlers=CONSOLE/g" ${CONFIG_PATH}/logging.properties
-
 # Set the broker name to the host name to ease experience in external monitors and in the console
 if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "(1\\.[^0-2]\\.[0-9]+|2\\.[0-9]+\\.[0-9]+)" ) ; then
   xmlstarlet ed -L \
