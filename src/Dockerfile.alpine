@@ -84,6 +84,9 @@ RUN wget -O ivy-2.4.0.jar http://search.maven.org/remotecontent?filepath=org/apa
   
 WORKDIR /var/lib/artemis/etc
 
+# Log to tty to enable docker logs container-name
+RUN sed -i "s/logger.handlers=.*/logger.handlers=CONSOLE/g" logging.properties
+
 # --java-options doesn't seem to work across the board on all versions adding them manually
 RUN sed -i "s/JAVA_ARGS=\"/JAVA_ARGS=\"-Djava.net.preferIPv4Addresses=true -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=2 /g" ../etc/artemis.profile
 
