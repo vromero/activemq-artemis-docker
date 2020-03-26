@@ -55,5 +55,5 @@ vromero/activemq-artemis,2.10.0,openjdk:8u232-jre-stretch,,Dockerfile
 vromero/activemq-artemis,2.10.0-alpine,openjdk:8u212-jre-alpine3.9,,Dockerfile.alpine
 vromero/activemq-artemis,2.10.1,openjdk:8u232-jre-stretch,vromero/activemq-artemis:2.10-latest,Dockerfile
 vromero/activemq-artemis,2.10.1-alpine,openjdk:8u212-jre-alpine3.9,vromero/activemq-artemis:2.10-alpine-latest,Dockerfile.alpine
-vromero/activemq-artemis,2.11.0,openjdk:8u232-jre-stretch,vromero/activemq-artemis:2.11-latest vromero/activemq-artemis:2-latest,Dockerfile
-vromero/activemq-artemis,2.11.0-alpine,openjdk:8u212-jre-alpine3.9,vromero/activemq-artemis:2.11-alpine-latest vromero/activemq-artemis:2-alpine-latest,Dockerfile.alpine
+vromero/activemq-artemis,2.11.0,openjdk:8u232-jre-stretch,vromero/activemq-artemis:2.11-latest vromero/activemq-artemis:2-latest vromero/activemq-artemis:latest,Dockerfile
+vromero/activemq-artemis,2.11.0-alpine,openjdk:8u212-jre-alpine3.9,vromero/activemq-artemis:2.11-alpine-latest vromero/activemq-artemis:2-alpine-latest vromero/activemq-artemis:alpine-latest,Dockerfile.alpine
