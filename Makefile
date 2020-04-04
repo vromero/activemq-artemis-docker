@@ -28,7 +28,7 @@ tag_%:
 
 push_%:
 	@docker push $(call getFullTagNameFromTag,$*)
-	@for alias in $(call lookupÀliasesFromTag,$1); do docker push $$alias ; done
+	@for alias in $(call lookupÀliasesFromTag,$*); do docker push $$alias ; done
 
 run_%: build
 	docker run -i -t --rm $(call getFullTagNameFromTag,$*)
