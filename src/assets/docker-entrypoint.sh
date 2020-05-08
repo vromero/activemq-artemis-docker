@@ -6,6 +6,13 @@ OVERRIDE_PATH=$BROKER_HOME/etc-override
 CONFIG_PATH=$BROKER_HOME/etc
 export BROKER_HOME OVERRIDE_PATH CONFIG_PATH
 
+# Prepends a value in the JAVA_ARGS of artemis.profile
+# $1 New string to be prepended to JAVA_ARGS
+# $2 Deduplication string
+prepend_java_arg() {
+  sed -i "/$1/!s/^\([[:space:]]\)*JAVA_ARGS=\"/\\1JAVA_ARGS=\"$2 /g" $CONFIG_PATH/artemis.profile
+}
+
 # In case this is running in a non standard system that automounts
 # empty volumes like OpenShift, restore the configuration into the 
 # volume
@@ -56,16 +63,18 @@ fi
 
 # Update min memory if the argument is passed
 if [ "$ARTEMIS_MIN_MEMORY" ]; then
-  sed -i "/-Xms/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Xms$ARTEMIS_MIN_MEMORY /g" $CONFIG_PATH/artemis.profile
+  prepend_java_arg "-Xms" "-Xms$ARTEMIS_MIN_MEMORY"
 fi
 
 # Update max memory if the argument is passed
 if [ "$ARTEMIS_MAX_MEMORY" ]; then
-  sed -i "/-Xmx/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Xmx$ARTEMIS_MAX_MEMORY /g" $CONFIG_PATH/artemis.profile
+  prepend_java_arg "-Xmx" "-Xmx$ARTEMIS_MAX_MEMORY"
 fi
 
 # Support extra java opts from JAVA_OPTS env
-sed -i "/JAVA_OPTS/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"\$JAVA_OPTS /g" $CONFIG_PATH/artemis.profile;
+if [ "$JAVA_OPTS" ]; then
+  prepend_java_arg "$JAVA_OPTS" "$JAVA_OPTS"
+fi
 
 mergeXmlFiles() {
   xmlstarlet tr /opt/assets/merge.xslt -s replace=true -s with="$2" "$1" > /tmp/broker-merge.xml
@@ -89,7 +98,7 @@ else
 fi
 
 if [ "$ENABLE_JMX" ] || [ "$ENABLE_JMX_EXPORTER" ]; then
-  sed -i "/com.sun.management.jmxremote/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=${JMX_PORT:-1099} -Dcom.sun.management.jmxremote.rmi.port=${JMX_RMI_PORT:-1098} -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false /g" $CONFIG_PATH/artemis.profile
+  prepend_java_arg "com.sun.management.jmxremote" "-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=${JMX_PORT:-1099} -Dcom.sun.management.jmxremote.rmi.port=${JMX_RMI_PORT:-1098} -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
   mergeXmlFiles "$CONFIG_PATH/broker.xml" /opt/assets/enable-jmx.xml "$CONFIG_PATH/broker.xml"
 fi
 
@@ -97,7 +106,7 @@ if [ "$ENABLE_JMX_EXPORTER" ]; then
   if [ -f /opt/jmx-exporter/etc-override/jmx-exporter-config.yaml ]; then
     cp /opt/jmx-exporter/etc-override/jmx-exporter-config.yaml /opt/jmx-exporter/etc/jmx-exporter-config.yaml
   fi
-  sed -i "/jmx_prometheus_javaagent.jar/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"-javaagent:\\/opt\\/jmx-exporter\\/jmx_prometheus_javaagent.jar=9404:\\/opt\\/jmx-exporter\\/etc\\/jmx-exporter-config.yaml /g" $CONFIG_PATH/artemis.profile
+  prepend_java_arg "jmx_prometheus_javaagent.jar" "-javaagent:\\/opt\\/jmx-exporter\\/jmx_prometheus_javaagent.jar=9404:\\/opt\\/jmx-exporter\\/etc\\/jmx-exporter-config.yaml"
 fi
 
 if [ -n "$CRITICAL_ANALYZER" ]; then
@@ -174,7 +183,7 @@ else
 fi
 
 # Add BROKER_CONFIGS env variable to startup options
-sed -i "/BROKER_CONFIGS/!s/^JAVA_ARGS=\"/JAVA_ARGS=\"\$BROKER_CONFIGS /g" $CONFIG_PATH/artemis.profile;
+prepend_java_arg "BROKER_CONFIGS" "\$BROKER_CONFIGS"
 
 # Loop through all BROKER_CONFIG_... and convert to java system properties
 env|grep -E "^BROKER_CONFIG_"|sed -e 's/BROKER_CONFIG_//g' >/tmp/brokerconfigs.txt
