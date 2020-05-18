@@ -8,6 +8,10 @@
 	GOSS_FILES_PATH=$BATS_TEST_DIRNAME/assets GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e ARTEMIS_USERNAME=myusername -e ARTEMIS_PASSWORD=mypassword ${COORDINATES}
 }
 
+@test "docker container can set java opts" {
+	GOSS_FILES_PATH=$BATS_TEST_DIRNAME/assets GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e "JAVA_OPTS=-Djavax.net.ssl.keyStore=/var/lib/artemis/etc/keystore.jks -Djavax.net.ssl.keyStorePassword=changeit" ${COORDINATES}
+}
+
 @test "docker container can autorun performance journal tuning" {
 	GOSS_FILES_PATH=$BATS_TEST_DIRNAME/assets GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e ARTEMIS_PERF_JOURNAL=AUTO ${COORDINATES}
 }
@@ -17,7 +21,7 @@
 }
 
 @test "docker container can enable JMX" {
-  	GOSS_FILES_PATH=$BATS_TEST_DIRNAME/assets GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e ENABLE_JMX=true -e JMX_PORT=2222 -e JMX_RMI_PORT=3333 -e JAVA_OPTS="-Dmyjavaopt=yes" -e BROKER_CONFIG_GLOBAL_MAX_SIZE=9500 ${COORDINATES}
+  	GOSS_FILES_PATH=$BATS_TEST_DIRNAME/assets GOSS_VARS="vars.yaml" dgoss run -it --rm -h testHostName.local -e ENABLE_JMX=true -e JMX_PORT=2222 -e JMX_RMI_PORT=3333 -e BROKER_CONFIG_GLOBAL_MAX_SIZE=9500 ${COORDINATES}
 }
 
 @test "docker container can enable JMX exporter" {
