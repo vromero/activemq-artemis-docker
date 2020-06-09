@@ -56,11 +56,11 @@ if [ "$ARTEMIS_USERNAME" ] && [ "$ARTEMIS_PASSWORD" ]; then
   if echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "1.[0-4].[0-9]" ; then
     sed -i "s/artemis[ ]*=.*/$ARTEMIS_USERNAME=$ARTEMIS_PASSWORD\\n/g" ../etc/artemis-users.properties
   else
-    if ${BROKER_HOME}/bin/artemis user list | grep -Eq \"artemis\" ; then
+    if ${BROKER_HOME}/bin/artemis user list | grep -Eq "\"artemis\"" ; then
       $BROKER_HOME/bin/artemis user rm --user artemis
     fi
-    if ${BROKER_HOME}/bin/artemis user list | grep -Eq \"${ARTEMIS_USERNAME}\" ; then
-      $BROKER_HOME/bin/artemis user rm --user $ARTEMIS_USERNAME
+    if ${BROKER_HOME}/bin/artemis user list | grep -Eq "\"${ARTEMIS_USERNAME}\"" ; then
+      $BROKER_HOME/bin/artemis user rm --user "$ARTEMIS_USERNAME"
     fi
     $BROKER_HOME/bin/artemis user add --user "$ARTEMIS_USERNAME" --password "$ARTEMIS_PASSWORD" --role amq
   fi
