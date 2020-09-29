@@ -10,8 +10,8 @@
 
 | Debian Based                                                                                 | Alpine Based                                                                                               |
 |--------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| [`latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile) | [`latest-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile.alpine) |
-| [`2.15.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile)  | [`2.15.0-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile.alpine)  |
+| [`latest`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile), [`latest-jdk11`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile.jdk11) | [`latest-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile.alpine) |
+| [`2.15.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile), [`2.15.0-jdk11`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile.jdk11)  | [`2.15.0-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile.alpine)  |
 | [`2.14.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile)  | [`2.14.0-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile.alpine)  |
 | [`2.13.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile)  | [`2.13.0-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile.alpine)  |
 | [`2.12.0`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile)  | [`2.12.0-alpine`](https://raw.githubusercontent.com/vromero/activemq-artemis-docker/master/src/Dockerfile.alpine)  |
@@ -47,9 +47,10 @@
 
 ## 3. About this image
 
-The ActiveMQ Artemis images come in two flavors, both equally supported :
+The ActiveMQ Artemis images come in three flavors, both equally supported :
 
 - **Debian based**: the default one.
+- **Debian based, Java 11**: Java 11 and Debian 10 (Buster).
 - **Alpine based**: much lighter.
 
 All versions of ActiveMQ Artemis are provided for the time being but versions previous to 1.5.5 shall be considered deprecated and could be removed at any time.
@@ -103,7 +104,7 @@ docker run -it --rm \
   -p 8161:8161 \
   -p 61616:61616 \
   vromero/activemq-artemis
-```  
+```
 
 After a few seconds you'll see in the output a block similar to:
 
@@ -293,7 +294,7 @@ Make sure you read the falacy number one of the [falacies of the distributed com
 ### 5.9 Using external configuration files
 
 It is possible to mount a whole artemis `etc` directory in this image in the volume `/var/lib/artemis/etc`.
-Be careful as this might be an overkill for many situations where only small tweaks are necessary.  
+Be careful as this might be an overkill for many situations where only small tweaks are necessary.
 
 When using this technique be aware that the configuration files of Artemis might change from version to version.
 Generally speaking, when in need to configure Artemis beyond what it is offered by this image using environment
@@ -373,7 +374,7 @@ A file name `broker-00.xslt` with content like the following listing, could be u
 **Entrypoint Overrides**
 
 Multiple shell scripts can be dropped in the `/var/lib/artemis/etc-override` volume. Those shell files must be named following the name convention `entrypoint-{{num}}.sh` where `num` is a numeric representation of the snippet.
-The shell scripts will be *executed* in alphabetical precedence of the file names on startup of the docker container.   
+The shell scripts will be *executed* in alphabetical precedence of the file names on startup of the docker container.
 
 A typical use case for using entrypoint overrides would be if you want to make a minor modification to a file which cannot be overriden using the 2 methods above and you do not want to expose the etc volume.
 
@@ -390,7 +391,7 @@ docker run -it --rm \
 ### 5.11 Broker Config
 
 ActiveMQ allows you to override key configuration values using [System properties](https://activemq.apache.org/artemis/docs/latest/configuration-index.html#System-properties).
-This docker image has built in support to set these values by passing environment variables prefixed with BROKER_CONFIG to the docker image.  
+This docker image has built in support to set these values by passing environment variables prefixed with BROKER_CONFIG to the docker image.
 
 Below is an example which overrides the global-max-size and disk-scan-period values
 ```

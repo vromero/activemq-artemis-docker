@@ -63,7 +63,7 @@ file:
     group: root
     filetype: symlink
     linked-to: /opt/apache-artemis-{{ .Env.ACTIVEMQ_ARTEMIS_VERSION }}
-  
+
   /opt/apache-artemis-{{ .Env.ACTIVEMQ_ARTEMIS_VERSION }}:
     exists: true
     owner: root
@@ -75,7 +75,7 @@ file:
     owner: artemis
     group: artemis
     filetype: directory
-  
+
   /var/lib/artemis/data:
     exists: true
     owner: artemis
@@ -131,21 +131,21 @@ file:
     group: artemis
     filetype: file
 {{if (getEnv "ARTEMIS_USERNAME") }}
-    contains: 
+    contains:
   {{ if and (getEnv "ACTIVEMQ_ARTEMIS_VERSION" "") (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "1.[01].0") }}
       - /{{ .Env.ARTEMIS_USERNAME }} *= *amq/
   {{ else }}
       - /amq *= *{{ .Env.ARTEMIS_USERNAME }}/
   {{ end }}
 {{ else }}
-    contains: 
+    contains:
   {{ if and (getEnv "ACTIVEMQ_ARTEMIS_VERSION" "") (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "1.[01].0") }}
       - /artemis *= *amq/
   {{ else }}
       - /amq *= *artemis/
   {{ end }}
 {{end}}
-  
+
 {{ if and (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "(1.5.[^012]|[^1]\\.\\d+\\.\\d+)") (getEnv "ARTEMIS_PERF_JOURNAL" "AUTO" | regexMatch "AUTO") }}
   /var/lib/artemis/data/.perf-journal-completed:
     exists: true
@@ -162,8 +162,12 @@ file:
     contains:
       - "-Djava.net.preferIPv4Addresses=true"
       - "-XX:+UnlockExperimentalVMOptions"
+{{if regexMatch "jdk-8$" (getEnv "JAVA_HOME") }}
       - "-XX:+UseCGroupMemoryLimitForHeap"
       - "-XX:MaxRAMFraction=2"
+{{else}}
+      - "-XX:+UseContainerSupport"
+{{end}}
 {{if getEnv "JAVA_OPTS" }}
       - "-Djavax.net.ssl.keyStore=/var/lib/artemis/etc/keystore.jks"
       - "-Djavax.net.ssl.keyStorePassword=changeit"
@@ -171,14 +175,14 @@ file:
 {{if getEnv "ENABLE_JMX_EXPORTER" }}
       - "jmx_prometheus_javaagent.jar=9404"
 {{else}}
-      - "!jmx_prometheus_javaagent.jar"  
-{{end}} 
+      - "!jmx_prometheus_javaagent.jar"
+{{end}}
       - "$BROKER_CONFIGS"
 {{ if or (getEnv "ARTEMIS_MIN_MEMORY") (getEnv "ARTEMIS_MAX_MEMORY") (getEnv "ENABLE_JMX") }}
   {{if getEnv "ARTEMIS_MIN_MEMORY" }}
       - "-Xms{{ .Env.ARTEMIS_MIN_MEMORY }}"
   {{else}}
-      - "!-Xms"  
+      - "!-Xms"
   {{end}}
   {{if getEnv "ARTEMIS_MAX_MEMORY" }}
       - "-Xmx{{ .Env.ARTEMIS_MAX_MEMORY }}"
