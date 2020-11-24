@@ -21,6 +21,11 @@ if [ "$RESTORE_CONFIGURATION" ] && [ -z "$(ls -A ${CONFIG_PATH})" ]; then
   echo Configuration restored
 fi
 
+# Update logger if the argument is passed
+if [ "$LOG_FORMATTER" = "JSON" ]; then
+    sed -i "s/handler.CONSOLE.formatter=.*/handler.CONSOLE.formatter=JSON/g" ../etc/logging.properties
+fi
+
 # Never use in a production environment
 if [ "$DISABLE_SECURITY" ]; then
     xmlstarlet ed -L \
