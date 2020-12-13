@@ -11,6 +11,7 @@ ARG ACTIVEMQ_ARTEMIS_VERSION
 ARG ACTIVEMQ_DISTRIBUTION_URL
 ENV JMX_EXPORTER_VERSION=0.3.1
 ENV JGROUPS_KUBERNETES_VERSION=0.9.3
+ENV JAVAX_JSON_VERSION=1.1.4
 
 # See https://github.com/hadolint/hadolint/wiki/DL4006
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -21,7 +22,8 @@ RUN apt-get -qq -o=Dpkg::Use-Pty=0 update && \
     xmlstarlet=1.6.1-2 \
     jq=1.5+dfsg-1.3 \
     ca-certificates=20161130+nmu1+deb9u1 \
-    wget=1.18-5+deb9u2 && \
+    wget=1.18-5+deb9u2 \
+    ivy=2.4.0-3 && \
   rm -rf /var/lib/apt/lists/*
 
 # Make sure pipes are considered to detemine success, see: https://github.com/hadolint/hadolint/wiki/DL4006
@@ -77,15 +79,21 @@ RUN if test "${ACTIVEMQ_ARTEMIS_VERSION}" = "1.0.0" ; \
 # Using KUBE_PING 0.9.3. Can't upgrade to 1.x.x as Artemis uses JGroups 3.3.x 
 # https://github.com/jgroups-extras/jgroups-kubernetes/issues/30
 WORKDIR /opt/jgroupskubernetes
-RUN wget -O ivy-2.4.0.jar http://search.maven.org/remotecontent?filepath=org/apache/ivy/ivy/2.4.0/ivy-2.4.0.jar && \
-  java -jar ivy-2.4.0.jar -dependency org.jgroups.kubernetes kubernetes "${JGROUPS_KUBERNETES_VERSION}" -retrieve "[artifact]-[revision](-[classifier]).[ext]" -types jar && \
-  java -jar ivy-2.4.0.jar -dependency org.jgroups.kubernetes dns "${JGROUPS_KUBERNETES_VERSION}" -retrieve "[artifact]-[revision](-[classifier]).[ext]" -types jar && \
-  rm ivy-2.4.0.jar
+RUN java -jar /usr/share/java/ivy.jar -dependency org.jgroups.kubernetes kubernetes "${JGROUPS_KUBERNETES_VERSION}" -retrieve "[artifact]-[revision](-[classifier]).[ext]" -types jar && \
+  java -jar /usr/share/java/ivy.jar -dependency org.jgroups.kubernetes dns "${JGROUPS_KUBERNETES_VERSION}" -retrieve "[artifact]-[revision](-[classifier]).[ext]" -types jar
+
+# JsonFormatter to enable JSON logging #148
+WORKDIR /opt/jsonformatter
+RUN java -jar /usr/share/java/ivy.jar -dependency org.glassfish javax.json "${JAVAX_JSON_VERSION}" -retrieve "[artifact]-[revision](-[classifier]).[ext]" -types bundle
 
 WORKDIR /var/lib/artemis/etc
 
 # Log to tty to enable docker logs container-name
 RUN sed -i "s/logger.handlers=.*/logger.handlers=CONSOLE/g" logging.properties
+
+# Add JSON log handler
+RUN echo "formatter.JSON=org.jboss.logmanager.formatters.JsonFormatter" | tee -a  logging.properties
+RUN sed -i "s/-Xbootclasspath\/a:\"\(.*\)\"/-Xbootclasspath\/a:\"\1:\/opt\/apache-artemis\/lib\/javax.json-1.1.4.jar\"/g" /var/lib/artemis/bin/artemis
 
 # --java-options doesn't seem to work across the board on all versions adding them manually
 RUN sed -i "s/JAVA_ARGS=\"/JAVA_ARGS=\"-Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=2 /g" ../etc/artemis.profile
@@ -144,6 +152,7 @@ COPY --from=builder "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}" "/opt/apac
 COPY --from=builder "/var/lib/artemis" "/var/lib/artemis"
 COPY --from=builder "/opt/jmx-exporter" "/opt/jmx-exporter"
 COPY --from=builder "/opt/jgroupskubernetes/*" "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}/lib/"
+COPY --from=builder "/opt/jsonformatter/*" "/opt/apache-artemis-${ACTIVEMQ_ARTEMIS_VERSION}/lib/"
 
 # To enable RESTORE_CONFIGURATION
 COPY --from=builder "/var/lib/artemis/etc" "/var/lib/artemis/etc-backup"

@@ -201,7 +201,33 @@ docker run -it --rm \
   vromero/activemq-artemis
 ```
 
-### 5.6 Prometheus metrics
+### 5.6 Using JSON Output
+
+It can be oftentimes preferrable to have the log output structured in a parseable format. 
+This image supports the usage of `org.jboss.logmanager.formatters.JsonFormatter` to format
+the output. To enable it `LOG_FORMATTER=JSON` can be passed as environment variable.
+
+```console
+docker run -it --rm \
+  -e LOG_FORMATTER=JSON \
+  vromero/activemq-artemis
+```
+When used, the output will look similar to the following listing:
+
+```console
+     _        _               _
+    / \  ____| |_  ___ __  __(_) _____
+   / _ \|  _ \ __|/ _ \  \/  | |/  __/
+  / ___ \ | \/ |_/  __/ |\/| | |\___ \
+ /_/   \_\|   \__\____|_|  |_|_|/___ /
+ Apache ActiveMQ Artemis 2.x.x
+
+{"timestamp":"2020-04-25T09:43:17.222Z","sequence":0,"loggerClassName":"org.apache.activemq.artemis.integration.bootstrap.ActiveMQBootstrapLogger_$logger","loggerName":"org.apache.activemq.artemis.integration.bootstrap","level":"INFO","message":"AMQ101000: Starting ActiveMQ Artemis Server","threadName":"main","threadId":1,"mdc":{},"ndc":"","hostName":"354e0e2e67cb","processName":"Artemis","processId":78}
+{"timestamp":"2020-04-25T09:43:17.408Z","sequence":1,"loggerClassName":"org.apache.activemq.artemis.core.server.ActiveMQServerLogger_$logger","loggerName":"org.apache.activemq.artemis.core.server","level":"INFO","message":"AMQ221000: live Message Broker is starting with configuration Broker Configuration (clustered=false,journalDirectory=data/journal,bindingsDirectory=data/bindings,largeMessagesDirectory=data/large-messages,pagingDirectory=data/paging)","threadName":"main","threadId":1,"mdc":{},"ndc":"","hostName":"354e0e2e67cb","processName":"Artemis","processId":78}
+{"timestamp":"2020-04-25T09:43:17.648Z","sequence":2,"loggerClassName":"org.apache.activemq.artemis.core.server.ActiveMQServerLogger_$logger","loggerName":"org.apache.activemq.artemis.core.server","level":"INFO","message":"AMQ221012: Using AIO Journal","threadName":"main","threadId":1,"mdc":{},"ndc":"","hostName":"354e0e2e67cb","processName":"Artemis","processId":78}
+```
+
+### 5.7 Prometheus metrics
 
 When using this image in a orchestrated environmnet like in Kubernetes. It is often useful to have metrics endpoints compatible
 with prometheus to ease monitoring.
@@ -261,7 +287,7 @@ artemis_journal_max_io 4096.0
 In case you need more control over the metrics that are exported, you can mount a [jmx-exporter](https://github.com/prometheus/jmx_exporter)
 configuration file in `/opt/jmx-exporter/etc-override` with the file name `jmx-exporter-config.yaml`.
 
-### 5.7 Settings the console's allow origin
+### 5.8 Settings the console's allow origin
 
 ActiveMQ Artemis console uses Jolokia. In the default vanilla non-docker installation Jolokia does set a CORS header to
 allow only localhost. In the docker image this create problems as things are rarely accesed as localhost.
@@ -275,7 +301,7 @@ docker run -it --rm \
   vromero/activemq-artemis
 ```
 
-### 5.8 Overriding parts of the configuration
+### 5.9 Overriding parts of the configuration
 
 ActiveMQ Artemis support disabling the security using the element `<security-enabled>false</security-enabled>`
 as described in the official [documentation](https://activemq.apache.org/artemis/docs/latest/security.html).
@@ -290,7 +316,7 @@ docker run -it --rm \
 Please keep in mind no production system, possible no environment at all, should ever disable security.
 Make sure you read the falacy number one of the [falacies of the distributed computing](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing) before disabling the security.
 
-### 5.9 Using external configuration files
+### 5.10 Using external configuration files
 
 It is possible to mount a whole artemis `etc` directory in this image in the volume `/var/lib/artemis/etc`.
 Be careful as this might be an overkill for many situations where only small tweaks are necessary.  
@@ -299,7 +325,7 @@ When using this technique be aware that the configuration files of Artemis might
 Generally speaking, when in need to configure Artemis beyond what it is offered by this image using environment
 variables, it is recommended to use the partial override mechanism described in the next section.
 
-### 5.10 Overriding parts of the configuration
+### 5.11 Overriding parts of the configuration
 
 The default ActiveMQ Artemis configuration can be partially modified, instead of completely replaced as in the previous section, using three mechanisms. Merge snippets, XSLT tranformations and entrypoint overrides.
 
@@ -387,7 +413,7 @@ docker run -it --rm \
   cat ../etc/broker.xml
 ```
 
-### 5.11 Broker Config
+### 5.12 Broker Config
 
 ActiveMQ allows you to override key configuration values using [System properties](https://activemq.apache.org/artemis/docs/latest/configuration-index.html#System-properties).
 This docker image has built in support to set these values by passing environment variables prefixed with BROKER_CONFIG to the docker image.  
@@ -400,7 +426,7 @@ docker run -it --rm   -p 8161:8161 \
     vromero/activemq-artemis
 ```
 
-### 5.12 Environment Variables
+### 5.13 Environment Variables
 
 Additionally, the following environment variables are supported
 
@@ -408,7 +434,7 @@ Additionally, the following environment variables are supported
 |---------------- |----------------- |-------------------------------------------------------------------|
 |JAVA_OPTS        |                  |Will pass additional java options to the artemis runtime           |
 
-### 5.13 Mount points
+### 5.14 Mount points
 
 | Mount point                      | Description                                                              |
 |--------------------------------- |--------------------------------------------------------------------------|
@@ -418,7 +444,7 @@ Additionally, the following environment variables are supported
 |`/var/lib/artemis/lock`           | Holds the command line locks (typically not useful to mount)             |
 |`/opt/jmx-exporter/etc-override`  | Holds the configuration file for jmx-exporter `jmx-exporter-config.yaml` |
 
-### 5.14 Exposed ports
+### 5.15 Exposed ports
 
 | Port    | Description                                                     |
 |-------- |-----------------------------------------------------------------|
