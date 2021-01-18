@@ -66,6 +66,8 @@ env:
   - VERSION=2.14.0 VARIANT=alpine
   - VERSION=2.15.0
   - VERSION=2.15.0 VARIANT=alpine
+  - VERSION=2.16.0
+  - VERSION=2.16.0 VARIANT=alpine
 
 before_install:
   - curl -L https://goss.rocks/install | sudo sh

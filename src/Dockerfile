@@ -164,6 +164,7 @@ RUN chown -R artemis.artemis /opt/jmx-exporter
 RUN mkdir -p /opt/assets
 COPY assets/merge.xslt /opt/assets
 COPY assets/enable-jmx.xml /opt/assets
+COPY assets/semver2.sh /usr/local/bin/semver
 
 # Web Server
 EXPOSE 8161
