@@ -4,6 +4,8 @@ set -e
 BROKER_HOME=/var/lib/artemis
 OVERRIDE_PATH=$BROKER_HOME/etc-override
 CONFIG_PATH=$BROKER_HOME/etc
+INITIAL_ARTEMIS_USERNAME=artemis
+INITIAL_ARTEMIS_PASSWORD=simetraehcapa
 export BROKER_HOME OVERRIDE_PATH CONFIG_PATH
 
 # Prepends a value in the JAVA_ARGS of artemis.profile
@@ -60,15 +62,29 @@ if [ "$ARTEMIS_USERNAME" ] && [ "$ARTEMIS_PASSWORD" ]; then
   # 1.5.0 and later are set using the cli both for username and role
   if echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "1.[0-4].[0-9]" ; then
     sed -i "s/artemis[ ]*=.*/$ARTEMIS_USERNAME=$ARTEMIS_PASSWORD\\n/g" ../etc/artemis-users.properties
-  else
-    if ${BROKER_HOME}/bin/artemis user list | grep -Eq "\"artemis\"" ; then
-      $BROKER_HOME/bin/artemis user rm --user artemis
+  elif echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "(1\.[5-9]\.[0-9])|(2\.[0-9]\.[0-9])|(2\.[0-1][0-5]\.[0-9])" ; then
+    # 1.5.0 to 2.15.0 modified the users file directly and therefore didn't need a running broker
+    if ${BROKER_HOME}/bin/artemis user list | grep -Eq "\"${INITIAL_ARTEMIS_USERNAME}\"" ; then
+      $BROKER_HOME/bin/artemis user rm --user "${INITIAL_ARTEMIS_USERNAME}"
     fi
     if ${BROKER_HOME}/bin/artemis user list | grep -Eq "\"${ARTEMIS_USERNAME}\"" ; then
       $BROKER_HOME/bin/artemis user rm --user "$ARTEMIS_USERNAME"
     fi
     $BROKER_HOME/bin/artemis user add --user "$ARTEMIS_USERNAME" --password "$ARTEMIS_PASSWORD" --role amq
-  fi
+  else
+    # 2.16.0 and later connect to broker for modifying user info
+    if [ "${ARTEMIS_USERNAME}" = "${INITIAL_ARTEMIS_USERNAME}" ] && [ "${ARTEMIS_PASSWORD}" != "${INITIAL_ARTEMIS_PASSWORD}" ]; then
+      ${BROKER_HOME}/bin/artemis-service start
+      sleep 1 # Wait until the broker is started successfully
+      ${BROKER_HOME}/bin/artemis user reset --user "${INITIAL_ARTEMIS_USERNAME}" --password "${INITIAL_ARTEMIS_PASSWORD}" --user-command-user "${INITIAL_ARTEMIS_USERNAME}" --user-command-password "${ARTEMIS_PASSWORD}"
+      ${BROKER_HOME}/bin/artemis-service stop
+    elif [ "${ARTEMIS_USERNAME}" != "${INITIAL_ARTEMIS_USERNAME}" ]; then
+      ${BROKER_HOME}/bin/artemis-service start
+      sleep 1 # Wait until the broker is started successfully
+      $BROKER_HOME/bin/artemis user add --user "${INITIAL_ARTEMIS_USERNAME}" --password "${INITIAL_ARTEMIS_PASSWORD}" --user-command-user "$ARTEMIS_USERNAME" --user-command-password "$ARTEMIS_PASSWORD" --role amq
+      $BROKER_HOME/bin/artemis user rm --user "${INITIAL_ARTEMIS_USERNAME}" --password "${INITIAL_ARTEMIS_PASSWORD}" --user-command-user "${INITIAL_ARTEMIS_USERNAME}"
+      ${BROKER_HOME}/bin/artemis-service stop
+    fi
 fi
 
 # Update min memory if the argument is passed
