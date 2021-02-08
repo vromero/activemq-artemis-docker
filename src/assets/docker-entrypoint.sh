@@ -4,8 +4,6 @@ set -e
 BROKER_HOME=/var/lib/artemis
 OVERRIDE_PATH=$BROKER_HOME/etc-override
 CONFIG_PATH=$BROKER_HOME/etc
-INITIAL_ARTEMIS_USERNAME=artemis
-INITIAL_ARTEMIS_PASSWORD=simetraehcapa
 export BROKER_HOME OVERRIDE_PATH CONFIG_PATH
 
 # Prepends a value in the JAVA_ARGS of artemis.profile
@@ -13,6 +11,16 @@ export BROKER_HOME OVERRIDE_PATH CONFIG_PATH
 # $2 Deduplication string
 prepend_java_arg() {
   sed -i "\#$1#!s#^\([[:space:]]\)*JAVA_ARGS=\"#\\1JAVA_ARGS=\"$2 #g" $CONFIG_PATH/artemis.profile
+}
+
+# Returns true if the semver version in $1 is greater 
+# of equal than the one passed in $2
+# $1 input version
+# $2 comparison version
+semver_greater_or_equal_than() {
+  # shellcheck disable=SC2046
+  test $(semver "${1}" "${2}") -ge 0
+  return 
 }
 
 # In case this is running in a non standard system that automounts
@@ -39,8 +47,8 @@ if [ "$DISABLE_SECURITY" ]; then
       -v "false" ../etc/broker.xml 
 fi
 
-# Set the broker name to the host name to ease experience in external monitors and in the console
-if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "(1\\.[^0-2]\\.[0-9]+|2\\.[0-9]+\\.[0-9]+)" ) ; then
+# Set the broker name to the host name to ease experience for external monitors and the console
+if semver_greater_or_equal_than "${ACTIVEMQ_ARTEMIS_VERSION}" 1.3.0 ; then
   xmlstarlet ed -L \
     -N activemq="urn:activemq" \
     -N core="urn:activemq:core" \
@@ -48,22 +56,28 @@ if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "(1\\.[^0-2]\\.[0-9]+|2\\.[0-9
     -v "$(hostname)" ../etc/broker.xml
 fi
 
-
 # Update users and roles with if username and password is passed as argument
 if [ "$ARTEMIS_USERNAME" ] && [ "$ARTEMIS_PASSWORD" ]; then
-  # From 1.0.0 up to 1.1.0 the artemis roles file was user=groups
-  # From 1.2.0 to 1.4.0 became group=users and we still set it with sed
-  if echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "1.[01].[0-9]" ; then
-    sed -i "s/artemis=amq/$ARTEMIS_USERNAME=amq\\n/g" ../etc/artemis-roles.properties
-  elif echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "1.[2-4].[0-9]" ; then
+
+  # Roles update
+
+  # 2.0.0 and later are set using the cli with a running broker
+  if semver_greater_or_equal_than "${ACTIVEMQ_ARTEMIS_VERSION}" 1.2.0 ; then
+    # From 1.2.0 on became group=users and we still set it with sed
     sed -i "s/amq[ ]*=.*/amq=$ARTEMIS_USERNAME\\n/g" ../etc/artemis-roles.properties
+  else
+    # From 1.0.0 up to 1.1.0 the artemis roles file was user=groups
+    sed -i "s/artemis=amq/$ARTEMIS_USERNAME=amq\\n/g" ../etc/artemis-roles.properties
   fi
-  
-  # 1.5.0 and later are set using the cli both for username and role
-  if echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "1.[0-4].[0-9]" ; then
-    sed -i "s/artemis[ ]*=.*/$ARTEMIS_USERNAME=$ARTEMIS_PASSWORD\\n/g" ../etc/artemis-users.properties
-  elif echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq "(1\.[5-9]\.[0-9])|(2\.[0-9]\.[0-9])|(2\.[0-1][0-5]\.[0-9])" ; then
-    # 1.5.0 to 2.15.0 modified the users file directly and therefore didn't need a running broker
+
+  # Users update
+
+  # 2.16.0 and later are set using the cli with a running broker
+  if semver_greater_or_equal_than "${ACTIVEMQ_ARTEMIS_VERSION}" 2.15.0 ; then
+    HASHED_PASSWORD=$(${BROKER_HOME}/bin/artemis mask --hash "${ARTEMIS_PASSWORD}" | cut -d " " -f 2)
+    sed -i "s/artemis[ ]*=.*/$ARTEMIS_USERNAME=ENC($HASHED_PASSWORD)\\n/g" ../etc/artemis-users.properties
+  elif semver_greater_or_equal_than "${ACTIVEMQ_ARTEMIS_VERSION}" 1.5.0 ; then
+    # 1.5.0 to 2.14.0 modified the users file directly and therefore didn't need a running broker
     if ${BROKER_HOME}/bin/artemis user list | grep -Eq "\"${INITIAL_ARTEMIS_USERNAME}\"" ; then
       $BROKER_HOME/bin/artemis user rm --user "${INITIAL_ARTEMIS_USERNAME}"
     fi
@@ -72,19 +86,9 @@ if [ "$ARTEMIS_USERNAME" ] && [ "$ARTEMIS_PASSWORD" ]; then
     fi
     $BROKER_HOME/bin/artemis user add --user "$ARTEMIS_USERNAME" --password "$ARTEMIS_PASSWORD" --role amq
   else
-    # 2.16.0 and later connect to broker for modifying user info
-    if [ "${ARTEMIS_USERNAME}" = "${INITIAL_ARTEMIS_USERNAME}" ] && [ "${ARTEMIS_PASSWORD}" != "${INITIAL_ARTEMIS_PASSWORD}" ]; then
-      ${BROKER_HOME}/bin/artemis-service start
-      sleep 1 # Wait until the broker is started successfully
-      ${BROKER_HOME}/bin/artemis user reset --user "${INITIAL_ARTEMIS_USERNAME}" --password "${INITIAL_ARTEMIS_PASSWORD}" --user-command-user "${INITIAL_ARTEMIS_USERNAME}" --user-command-password "${ARTEMIS_PASSWORD}"
-      ${BROKER_HOME}/bin/artemis-service stop
-    elif [ "${ARTEMIS_USERNAME}" != "${INITIAL_ARTEMIS_USERNAME}" ]; then
-      ${BROKER_HOME}/bin/artemis-service start
-      sleep 1 # Wait until the broker is started successfully
-      $BROKER_HOME/bin/artemis user add --user "${INITIAL_ARTEMIS_USERNAME}" --password "${INITIAL_ARTEMIS_PASSWORD}" --user-command-user "$ARTEMIS_USERNAME" --user-command-password "$ARTEMIS_PASSWORD" --role amq
-      $BROKER_HOME/bin/artemis user rm --user "${INITIAL_ARTEMIS_USERNAME}" --password "${INITIAL_ARTEMIS_PASSWORD}" --user-command-user "${INITIAL_ARTEMIS_USERNAME}"
-      ${BROKER_HOME}/bin/artemis-service stop
-    fi
+    # 1.0.0 to 1.4.0 modify the file directly with the old format
+    sed -i "s/artemis[ ]*=.*/$ARTEMIS_USERNAME=$ARTEMIS_PASSWORD\\n/g" ../etc/artemis-users.properties
+  fi
 fi
 
 # Update min memory if the argument is passed
@@ -202,7 +206,7 @@ performanceJournal() {
   fi
 }
 
-if (echo "${ACTIVEMQ_ARTEMIS_VERSION}" | grep -Eq  "(1.5\\.[^12]|[^1]\\.[0-9]+\\.[0-9]+)" ) ; then 
+if semver_greater_or_equal_than "${ACTIVEMQ_ARTEMIS_VERSION}" 1.5.3 ; then 
   performanceJournal
 else
   echo "Ignoring any performance journal parameter as version predates it: ${ACTIVEMQ_ARTEMIS_VERSION}"

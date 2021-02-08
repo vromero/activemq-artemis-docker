@@ -116,35 +116,12 @@ file:
     owner: artemis
     group: artemis
     filetype: file
-    contains:
-{{if (getEnv "ARTEMIS_PASSWORD") }}
-  {{ if and (getEnv "ACTIVEMQ_ARTEMIS_VERSION" "") (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "1.[0-4].0") }}
-      - {{.Env.ARTEMIS_USERNAME }}={{ .Env.ARTEMIS_PASSWORD }}
-  {{ else }}
-      - /{{.Env.ARTEMIS_USERNAME }} *= *ENC/
-  {{ end }}
-{{end}}
 
   /var/lib/artemis/etc/artemis-roles.properties:
     exists: true
     owner: artemis
     group: artemis
     filetype: file
-{{if (getEnv "ARTEMIS_USERNAME") }}
-    contains: 
-  {{ if and (getEnv "ACTIVEMQ_ARTEMIS_VERSION" "") (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "1.[01].0") }}
-      - /{{ .Env.ARTEMIS_USERNAME }} *= *amq/
-  {{ else }}
-      - /amq *= *{{ .Env.ARTEMIS_USERNAME }}/
-  {{ end }}
-{{ else }}
-    contains: 
-  {{ if and (getEnv "ACTIVEMQ_ARTEMIS_VERSION" "") (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "1.[01].0") }}
-      - /artemis *= *amq/
-  {{ else }}
-      - /amq *= *artemis/
-  {{ end }}
-{{end}}
   
 {{ if and (.Env.ACTIVEMQ_ARTEMIS_VERSION | regexMatch "(1.5.[^012]|[^1]\\.\\d+\\.\\d+)") (getEnv "ARTEMIS_PERF_JOURNAL" "AUTO" | regexMatch "AUTO") }}
   /var/lib/artemis/data/.perf-journal-completed:
